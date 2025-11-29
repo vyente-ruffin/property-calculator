@@ -1,3 +1,4 @@
+# CI/CD test - deployed via GitHub Actions
 import streamlit as st
 import pandas as pd
 import plotly.express as px
