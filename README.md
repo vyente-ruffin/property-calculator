@@ -2,7 +2,7 @@
 
 **Make smarter property investment decisions in seconds.** Instantly analyze residential and commercial properties with comprehensive financial metrics, shareable calculations, and professional-grade accuracy.
 
-🚀 **[Live Demo](https://propertycalc2025.azurewebsites.net/)** | **[GitHub Repository](https://github.com/david-ruffin/property-calculator)**
+🚀 **[Live Demo](https://property-calculator.azurewebsites.net/)** | **[GitHub Repository](https://github.com/david-ruffin/property-calculator)**
 
 ## 🏆 Why Property Investment Calculator?
 
@@ -89,17 +89,17 @@
 
 ### ✅ Production Deployment
 **Live on Microsoft Azure**:
-- **Azure Web App**: [propertycalc2025.azurewebsites.net](https://propertycalc2025.azurewebsites.net/)
-- **Python 3.11** runtime with Streamlit on Linux
-- **Always-on availability** with automatic scaling
+- **Azure Web App**: [property-calculator.azurewebsites.net](https://property-calculator.azurewebsites.net/)
+- **Python 3.11** runtime with Streamlit on Linux (B1 tier for WebSocket support)
+- **Startup Command**: `python -m streamlit run app.py --server.port 8000 --server.address 0.0.0.0`
 - **Custom domain ready** for professional deployment
 
 ### ✅ Continuous Integration/Deployment
-**Automated GitHub Actions pipeline**:
+**Automated GitHub Actions pipeline with OIDC authentication**:
 - **Triggers**: Push to main branch or manual dispatch
-- **Build Process**: Virtual environment, dependency installation, testing
-- **Deploy Time**: ~45-75 seconds per deployment
-- **Success Rate**: 109/109 successful deployments
+- **Authentication**: Azure AD federated identity (OIDC) - no secrets to rotate
+- **Build Process**: Checkout → Azure Login → Deploy to Web App
+- **Deploy Time**: ~4 minutes per deployment
 - **Zero-downtime deployments** with Azure Web Apps
 
 ## 🚀 Future Roadmap
