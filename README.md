@@ -102,6 +102,71 @@
 - **Deploy Time**: ~4 minutes per deployment
 - **Zero-downtime deployments** with Azure Web Apps
 
+## 🤖 Claude Code Integration
+
+This project includes a property listing parser that extracts multifamily property data and sends it to Google Sheets via n8n webhooks.
+
+### Prerequisites
+- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)
+- n8n instance (self-hosted or cloud)
+- Google Sheets for data destination
+
+### Setup
+
+#### 1. Clone and Configure Environment
+```bash
+git clone https://github.com/david-ruffin/property-calculator.git
+cd property-calculator
+cp .env.example .env
+# Edit .env with your Rentcast API key
+```
+
+#### 2. Install n8n MCP Server
+The n8n MCP server allows Claude Code to interact with your n8n workflows.
+
+**Source**: [leonardsellem/n8n-mcp-server](https://github.com/leonardsellem/n8n-mcp-server)
+
+In Claude Code, run:
+```
+/mcp add n8n
+```
+
+Configure with:
+| Setting | Value |
+|---------|-------|
+| Command | `npx` |
+| Args | `["-y", "@leonardsellem/n8n-mcp-server"]` |
+| N8N_API_URL | `https://your-n8n-instance/api/v1` |
+| N8N_API_KEY | Your n8n API key |
+
+#### 3. Using the Property Parser
+```
+@Property-Prompt.md [paste your listing text here]
+```
+
+### Google Sheets Column Structure
+| Column | Description |
+|--------|-------------|
+| Price | Listing price |
+| Address | Street address only |
+| City | City, ST ZIP |
+| Cap Rate | Capitalization rate |
+| Date On Market | YYYY-MM-DD |
+| Monthly Rental Income (Projected) | Scheduled/market rent |
+| Monthly Rental Income (Actual) | Current collected rent |
+| Annual Rent Income (Projected) | Projected × 12 |
+| Annual Rent Income (Actual) | Actual × 12 |
+| NOI | Net Operating Income |
+| Lot / building size | SF / SF |
+| Total Units | Number of units |
+| Unit Mix Summary | Using actual rents |
+| Link | Listing URL |
+| Description | One-line summary |
+| Analyze | (manual) |
+| Investible | (manual) |
+| Cashflow | (manual) |
+| Notes | (manual) |
+
 ## 🚀 Future Roadmap
 
 ### ✅ Phase 1: Property URL Integration (Completed!)
