@@ -6,7 +6,10 @@ plotly>=5.24.1
 # Performance optimization packages
 psutil>=5.9.0
 
-# Reduce memory footprint
-# Note: Consider using these alternatives for production
-# openpyxl>=3.1.0  # Only if Excel files needed
-# numba>=0.58.0    # Only if heavy numerical computations
+# Property Parser backend
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic-settings>=2.6.0
+openai>=1.55.0
+httpx>=0.27.0
+playwright>=1.40.0

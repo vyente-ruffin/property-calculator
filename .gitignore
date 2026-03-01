@@ -21,3 +21,10 @@ streamlit.log
 
 # Streamlit
 .streamlit/
+
+# Node
+node_modules/
+
+# Backups and data files
+n8n-backups/
+*.pdf

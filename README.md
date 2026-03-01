@@ -176,11 +176,18 @@ Configure with:
 - ✅ **Enhanced Sharing** → Calculator URLs now include property context for team collaboration
 - ✅ **Complete URL Preservation** → Share analysis with direct access to original listing
 
-### Phase 2: Auto-Population (Next Up)
+### ✅ Phase 2: URL Scraping & Auto-Extraction (Completed!)
+**Paste a listing URL and get instant structured data**:
+- ✅ **Smart URL Parsing** → Paste a standalone listing URL, auto-scrape and extract all 15 fields
+- ✅ **Two-Tier Scraping** → Fast HTTP fetch with Playwright headless browser fallback for JS-rendered SPAs
+- ✅ **Multi-Platform Support** → Works with Redfin, TheMLS, and other listing sites (some sites like LoopNet/Crexi block scrapers)
+- ✅ **Seamless Pipeline** → URL-only, text+URL, and text-only inputs all work through the same 8-step pipeline
+
+### Phase 3: Enhanced Auto-Population (Next Up)
 **Eliminate manual data entry entirely**:
-- **Smart URL Parsing** → Paste listing URL, auto-fill purchase price, rents, taxes
-- **Multi-Platform Support** → LoopNet, Zillow, Crexi, and other major listing sites
-- **Time Savings** → Go from listing to analysis in under 30 seconds
+- **Calculator Auto-Fill** → Route parsed data directly into the Streamlit calculator
+- **Batch Processing** → Parse multiple listings at once
+- **Time Savings** → Go from listing to full investment analysis in under 60 seconds
 
 ## 📊 Data Sources & Accuracy
 
