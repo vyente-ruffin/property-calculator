@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="app">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark">4N</div>
+      <div class="brand-name"><span>405</span> Network</div>
+    </div>
+    <div class="header-right">
+      <span class="header-tag">Property Analyzer</span>
+      <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">◐</button>
+      <div class="header-dot"></div>
+    </div>
+  </header>
+
+  <!-- Mobile tab bar -->
+  <div class="mobile-tabs">
+    <button class="mobile-tab" onclick="switchMobileTab('chat')">💬 Chat</button>
+    <button class="mobile-tab active" onclick="switchMobileTab('calc')">📊 Calculator</button>
+  </div>
+
+  <div class="workspace">
+    <!-- CHAT PANEL -->
+    <div class="chat-panel">
+      <div class="chat-header">
+        <div class="chat-header-icon">⚡</div>
+        <div class="chat-header-text">Listing Parser</div>
+      </div>
+      <div class="chat-feed" id="chatFeed">
+        <div class="msg system">
+          <div class="msg-bubble">Paste a property listing — raw text or URL — and I'll extract the data and run the investment analysis.</div>
+        </div>
+      </div>
+      <div class="chat-compose">
+        <div class="compose-box">
+          <textarea id="listingInput" rows="3" placeholder="Paste listing text or URL..."></textarea>
+          <div class="compose-actions">
+            <button class="btn-ghost" onclick="document.getElementById('listingInput').value=''">Clear</button>
+            <button class="btn-parse" id="parseBtn" onclick="parseListing()">Parse Listing</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALCULATOR PANEL -->
+    <div class="calc-panel">
+      <div class="calc-topbar">
+        <div class="type-pill">
+          <button hx-get="/sidebar/residential" hx-target="#sidebar-form" hx-swap="innerHTML"
+                  onclick="this.classList.add('active');this.nextElementSibling.classList.remove('active')">Residential</button>
+          <button class="active" hx-get="/sidebar/commercial" hx-target="#sidebar-form" hx-swap="innerHTML"
+                  onclick="this.classList.add('active');this.previousElementSibling.classList.remove('active')">Commercial</button>
+        </div>
+        <a id="listingLink" href="#" class="listing-link" style="display:none">↗ View Listing</a>
+        <span id="downBadge" class="down-badge caution" style="display:none"></span>
+      </div>
+      <div class="calc-scroll">
+        <div id="sidebar-form">
+          <!-- Sidebar form loaded via HTMX or included by default -->
+          {% include "partials/sidebar_commercial.html" %}
+        </div>
+        <div id="results">
+          {% if r %}
+            {% include "partials/results_overview.html" %}
+          {% else %}
+          <div class="empty-state">
+            <div style="font-size:48px; text-align:center; margin:60px 0 16px;">🏢</div>
+            <p style="text-align:center; color:var(--text-3); font-size:14px;">Enter property details or paste a listing to analyze</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="bottom-bar">
+        <button class="btn btn-gold" id="saveBtn" hx-post="/api/properties" hx-include="[name]" hx-swap="none"
+                hx-on::after-request="this.querySelector('span').textContent=event.detail.xhr.status===200?'✅ Saved':'❌ Error'">
+          💾 <span>Save to Portfolio</span>
+        </button>
+        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(window.location.href);this.querySelector('span').textContent='✅ Copied!'">
+          🔗 <span>Share Link</span>
+        </button>
+        <button class="btn btn-outline" hx-get="/tab/portfolio" hx-target="#results" hx-swap="innerHTML">
+          📊 <span>Portfolio</span>
+        </button>
+        <div class="bar-spacer"></div>
+        <span class="bar-status" id="saveStatus">not saved</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
