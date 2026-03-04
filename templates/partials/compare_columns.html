@@ -1,0 +1,28 @@
+<div class="sec-header">Compare {{ properties|length }} Deals</div>
+
+{% if properties|length == 0 %}
+<div style="text-align:center;padding:40px;color:var(--text-3);">
+  <div style="font-size:32px;margin-bottom:12px;">📊</div>
+  <p>Select deals from the Portfolio to compare</p>
+</div>
+{% else %}
+<div style="display:grid; grid-template-columns:200px repeat({{ properties|length }}, 1fr); gap:0; margin-bottom:16px;">
+  <!-- Header row -->
+  <div style="padding:8px 12px;"></div>
+  {% for p in properties %}
+  <div style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);text-align:center;font-weight:600;font-size:13px;color:var(--text-white);">
+    {{ p.get('Address', 'Property ' ~ loop.index) }}
+  </div>
+  {% endfor %}
+
+  <!-- Metric rows -->
+  {% for metric in ['Price', 'Total Units', 'Cap Rate', 'Cashflow', 'Investible'] %}
+  <div style="padding:8px 12px;font-size:12px;color:var(--text-3);border-bottom:1px solid var(--border);">{{ metric }}</div>
+  {% for p in properties %}
+  <div style="padding:8px 12px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;border-bottom:1px solid var(--border);border-left:1px solid var(--border);">
+    {{ p.get(metric, '--') }}
+  </div>
+  {% endfor %}
+  {% endfor %}
+</div>
+{% endif %}

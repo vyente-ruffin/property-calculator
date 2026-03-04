@@ -1,0 +1,36 @@
+<div class="sec-header">Portfolio — {{ summary.total_deals }} Deals</div>
+<div class="metrics-row" style="margin-bottom:16px;">
+  <div class="metric up" style="padding:12px;text-align:center;">
+    <div class="metric-label">Good Deals</div>
+    <div class="metric-num" style="font-size:20px;">{{ summary.good_deals }}</div>
+  </div>
+  <div class="metric down" style="padding:12px;text-align:center;">
+    <div class="metric-label">Bad Deals</div>
+    <div class="metric-num" style="font-size:20px;">{{ summary.bad_deals }}</div>
+  </div>
+  <div class="metric" style="padding:12px;text-align:center;">
+    <div class="metric-label">Total</div>
+    <div class="metric-num" style="font-size:20px;">{{ summary.total_deals }}</div>
+  </div>
+</div>
+<div class="tbl-container">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Address</th><th>Price</th><th>Units</th><th>Cap Rate</th><th>Verdict</th><th>Cash Flow</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in properties %}
+      <tr style="cursor:pointer;" hx-get="/?{{ p.analyze_params }}" hx-target="body" hx-push-url="true">
+        <td>{{ p.get('Address', '--') }}</td>
+        <td>{{ p.get('Price', '--') }}</td>
+        <td>{{ p.get('Total Units', '--') }}</td>
+        <td>{{ p.get('Cap Rate', '--') }}</td>
+        <td>{{ p.get('Investible', '--') }}</td>
+        <td>{{ p.get('Cashflow', '--') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

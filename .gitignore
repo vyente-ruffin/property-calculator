@@ -1,3 +1,4 @@
+archive/
 venv/
 __pycache__/
 *.pyc
@@ -11,7 +12,6 @@ ENV/
 
 # Logs
 *.log
-streamlit.log
 
 # IDE
 .vscode/
@@ -19,12 +19,5 @@ streamlit.log
 *.swp
 *.swo
 
-# Streamlit
-.streamlit/
-
 # Node
 node_modules/
-
-# Backups and data files
-n8n-backups/
-*.pdf

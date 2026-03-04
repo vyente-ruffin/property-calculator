@@ -7,6 +7,10 @@
      expenses = list of {name, monthly, annual} dicts
    ────────────────────────────────────────────────────────────── #}
 
+{% if params and params.get('image_url') %}
+<div class="property-bg" style="background-image: url('{{ params.get('image_url') }}');"></div>
+{% endif %}
+
 {% if error %}
 <div class="verdict pass">
   <div class="verdict-icon">❌</div>

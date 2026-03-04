@@ -1,0 +1,64 @@
+<form id="calc-form"
+      hx-post="/calculate"
+      hx-trigger="change"
+      hx-target="#results"
+      hx-include="[name]"
+      hx-push-url="true">
+  <input type="hidden" name="property_type" value="Residential">
+  <input type="hidden" name="total_units" value="1">
+
+  <div class="sec-header">Deal Parameters</div>
+  <div class="fields-grid">
+    <div class="field">
+      <label>Purchase Price</label>
+      <input type="number" name="purchase_price" value="{{ params.get('purchase_price', '650000') }}">
+    </div>
+    <div class="field">
+      <label>Monthly Rent</label>
+      <input type="number" name="monthly_rent" value="{{ params.get('monthly_rent', '5000') }}">
+    </div>
+    <div class="field">
+      <label>State</label>
+      <select name="state">
+        {% for st in ['AZ','CA','IN','NV','TX','MI'] %}
+        <option value="{{ st }}" {% if params.get('state', 'CA') == st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>Loan Term</label>
+      <select name="loan_years">
+        <option value="15" {% if params.get('loan_years', '15')|string == '15' %}selected{% endif %}>15 years</option>
+        <option value="30" {% if params.get('loan_years', '15')|string == '30' %}selected{% endif %}>30 years</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="params-grid">
+    <div class="param">
+      <div class="param-header">
+        <span class="param-label">Down Payment</span>
+        <span class="param-val" id="dp-val">{{ params.get('down_payment_pct', '20') }}%</span>
+      </div>
+      <input type="range" name="down_payment_pct" min="0" max="100"
+             value="{{ params.get('down_payment_pct', '20') }}"
+             oninput="document.getElementById('dp-val').textContent=this.value+'%'"
+             hx-trigger="change">
+    </div>
+    <div class="param">
+      <div class="param-header">
+        <span class="param-label">Interest Rate</span>
+        <span class="param-val" id="ir-val">{{ params.get('interest_rate', '6.5') }}%</span>
+      </div>
+      <input type="range" name="interest_rate" min="0" max="10" step="0.1"
+             value="{{ params.get('interest_rate', '6.5') }}"
+             oninput="document.getElementById('ir-val').textContent=this.value+'%'"
+             hx-trigger="change">
+    </div>
+  </div>
+
+  <div class="field" style="margin-bottom:14px;">
+    <label>Property URL</label>
+    <input type="text" name="property_url" value="{{ params.get('property_url', '') }}" placeholder="https://...">
+  </div>
+</form>
