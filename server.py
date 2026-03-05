@@ -1,4 +1,11 @@
-import logging
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path.home() / ".ai" / "logging"))
+from logger import setup_logging, get_logger
+
+setup_logging(project="property-calculator")
+log = get_logger("server")
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -11,8 +18,6 @@ from backend.routes.health import router as health_router
 from backend.routes.pages import router as pages_router
 from backend.routes.parse import router as parse_router
 from backend.routes.sheets import router as sheets_router
-
-logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="Property Parser")
 
@@ -72,8 +77,13 @@ async def index(request: Request):
             context["r"] = result
             context["v"] = verdict
             context["inp"] = inp
-        except Exception:
-            pass  # Invalid params — show empty calculator
+            log.info("calculation_rendered",
+                      property_type=inp.property_type,
+                      purchase_price=str(inp.purchase_price),
+                      state=inp.state,
+                      verdict=verdict.verdict)
+        except Exception as e:
+            log.error("calculation_failed", error=str(e))
 
     return templates.TemplateResponse(request, "index.html", context=context)
 

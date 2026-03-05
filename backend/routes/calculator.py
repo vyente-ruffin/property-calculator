@@ -7,7 +7,12 @@ GET /sidebar/*: swap sidebar partials for property type switching.
 
 from __future__ import annotations
 
+import sys
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
+
+sys.path.insert(0, str(Path.home() / ".ai" / "logging"))
+from logger import get_logger
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
@@ -19,6 +24,7 @@ from backend.services.verdict import generate_verdict
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+log = get_logger("calculator")
 
 
 @router.post("/calculate", response_class=HTMLResponse)
@@ -48,6 +54,7 @@ async def calculate_property(request: Request):
             monthly_rent=Decimal(str(data.get("monthly_rent", "5000"))) if data.get("monthly_rent") else None,
         )
     except (InvalidOperation, ValueError) as e:
+        log.error("calculation_input_error", error=str(e), form_data=str(data))
         return templates.TemplateResponse(
             request=request,
             name="partials/results_overview.html",
@@ -56,6 +63,14 @@ async def calculate_property(request: Request):
 
     result = calculate(inp)
     verdict = generate_verdict(result)
+
+    log.info("calculation_completed",
+             property_type=inp.property_type,
+             purchase_price=str(inp.purchase_price),
+             state=inp.state,
+             verdict=verdict.verdict,
+             cash_flow=str(result.annual_cash_flow),
+             coc=str(result.cash_on_cash))
 
     # Build URL params for HX-Push-Url
     params = "&".join(f"{k}={v}" for k, v in data.items() if v)
