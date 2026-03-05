@@ -27,7 +27,8 @@
         </div>
       </div>
       <div class="chat-footer">
-        <textarea id="listingInput" rows="2" placeholder="Paste listing text or URL..."></textarea>
+        <textarea id="listingInput" rows="2" placeholder="Paste listing text or URL..."
+                  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();parseListing();}"></textarea>
         <div class="chat-compose-actions">
           <button class="btn-ghost" onclick="document.getElementById('listingInput').value=''">Clear</button>
           <button class="btn-parse" id="parseBtn" onclick="parseListing()">Parse</button>
