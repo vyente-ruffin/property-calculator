@@ -344,34 +344,47 @@ function saveToGoogleSheet() {
   var btn = document.getElementById("saveBtn");
   if (btn) btn.querySelector("span").textContent = "Saving...";
 
-  // POST raw 15-field parser data to n8n webhook
+  // Try n8n webhook first, fall back to direct API
   fetch("/api/webhook-url").then(function(r) { return r.json(); }).then(function(cfg) {
     return fetch(cfg.url, {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {"Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
       body: JSON.stringify(lastParsedResult)
     });
   }).then(function(r) {
-    if (!r.ok) throw new Error("Webhook returned " + r.status);
+    if (!r.ok) throw new Error("n8n:" + r.status);
     return r.json().catch(function() { return {}; });
   }).then(function(d) {
     var status = document.getElementById("saveStatus");
-    if (status) status.textContent = "✅ Saved to Google Sheet";
+    if (status) status.textContent = "✅ Saved to Google Sheet (n8n)";
     if (btn) btn.querySelector("span").textContent = "✅ Saved";
-    fetch('/api/log', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+    fetch('/api/log', { method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({event: 'google_sheet_saved_via_n8n', data: {address: lastParsedResult.Address, price: lastParsedResult.Price}})
     }).catch(function() {});
-  }).catch(function(e) {
-    var status = document.getElementById("saveStatus");
-    if (status) status.textContent = "❌ " + e.message;
-    if (btn) btn.querySelector("span").textContent = "Save to Google Sheet";
-    fetch('/api/log', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({event: 'google_sheet_error', data: {error: e.message}})
-    }).catch(function() {});
+  }).catch(function(n8nErr) {
+    // n8n failed — fall back to direct gspread API
+    fetch("/api/properties", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({data: lastParsedResult})
+    }).then(function(r) {
+      if (!r.ok) throw new Error("Direct API: " + r.status);
+      return r.json();
+    }).then(function(d) {
+      var status = document.getElementById("saveStatus");
+      if (status) status.textContent = "✅ Saved to Google Sheet (direct)";
+      if (btn) btn.querySelector("span").textContent = "✅ Saved";
+      fetch('/api/log', { method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({event: 'google_sheet_saved_direct', data: {row: d.row, address: lastParsedResult.Address}})
+      }).catch(function() {});
+    }).catch(function(directErr) {
+      var status = document.getElementById("saveStatus");
+      if (status) status.textContent = "❌ " + directErr.message;
+      if (btn) btn.querySelector("span").textContent = "Save to Google Sheet";
+      fetch('/api/log', { method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({event: 'google_sheet_error', data: {n8n_error: n8nErr.message, direct_error: directErr.message}})
+      }).catch(function() {});
+    });
   });
 }
 
