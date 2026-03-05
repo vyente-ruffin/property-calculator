@@ -31,8 +31,8 @@ def test_get_with_params_renders_results(client):
         "&total_units=8&state=CA"
     )
     assert response.status_code == 200
-    assert "verdict" in response.text.lower()
-    assert "Cap Rate" in response.text or "cap" in response.text.lower()
+    assert "deal-eval" in response.text.lower()
+    assert "Investment Analysis" in response.text or "investment" in response.text.lower()
 
 
 def test_round_trip_state_preservation(client):
@@ -56,4 +56,4 @@ def test_round_trip_state_preservation(client):
     url = post_resp.headers.get("HX-Push-Url", "/")
     get_resp = client.get(url)
     assert get_resp.status_code == 200
-    assert "verdict" in get_resp.text.lower()
+    assert "deal-eval" in get_resp.text.lower()

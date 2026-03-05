@@ -12,9 +12,9 @@ def test_root_includes_htmx_cdn(client):
     assert "htmx.org" in response.text
 
 
-def test_root_includes_daisyui_cdn(client):
+def test_root_includes_theme_css(client):
     response = client.get("/")
-    assert "daisyui" in response.text
+    assert "theme.css" in response.text
 
 
 def test_static_css_served(client):

@@ -29,7 +29,7 @@ class TestCalculateCommercial:
     def test_returns_html_with_verdict(self, client):
         response = client.post("/calculate", data=self.FORM_DATA)
         assert response.status_code == 200
-        assert "verdict" in response.text
+        assert "deal-eval" in response.text
 
     def test_returns_metric_cards(self, client):
         response = client.post("/calculate", data=self.FORM_DATA)
