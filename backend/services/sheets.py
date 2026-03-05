@@ -33,7 +33,7 @@ class SheetsService:
         headers = self._worksheet.row_values(1)
         row = [str(data.get(h, "")) for h in headers]
         self._worksheet.append_row(row, value_input_option="USER_ENTERED")
-        return self._worksheet.row_count
+        return len(self._worksheet.get_all_values())
 
     def get_summary(self) -> dict[str, Any]:
         """Get portfolio summary stats."""

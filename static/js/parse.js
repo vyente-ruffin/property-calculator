@@ -281,8 +281,8 @@ function buildUnitMixTable(raw) {
 }
 
 function populateCalculator(data) {
-  var annualRent = parseCurrency(data["Annual Rent Income (Projected)"])
-    || parseCurrency(data["Annual Rent Income (Actual)"])
+  var annualRent = parseCurrency(data["Annual Rent Income (Actual)"])
+    || parseCurrency(data["Annual Rent Income (Projected)"])
     || parseCurrency(data["Annual Rent Income"]);
 
   var mapping = {
@@ -328,7 +328,7 @@ function populateCalculator(data) {
 
 function parseCurrency(str) {
   if (!str) return "";
-  return str.replace(/[$,]/g, "");
+  return str.replace(/[$,]/g, "").replace(/\.00$/, "");
 }
 
 function saveToGoogleSheet() {

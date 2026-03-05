@@ -16,6 +16,10 @@ async def scrape_listing_page(url: str) -> str | None:
 
     Returns plain text from the page body, or None on failure.
     """
+    # TheMLS requires JavaScript rendering, skip httpx
+    if "themls.com" in url:
+        return await _scrape_with_playwright(url)
+
     # Fast path: plain HTTP fetch
     text = await _scrape_with_httpx(url)
     if text and len(text) >= MIN_CONTENT_LENGTH:
