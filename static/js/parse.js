@@ -3,6 +3,8 @@
  * Ported from frontend/js/chat.js SSE pattern.
  */
 
+var parsedProperties = [];
+
 async function parseListing() {
   var input = document.getElementById("listingInput");
   var text = input.value.trim();
@@ -22,7 +24,7 @@ async function parseListing() {
   // Add user message
   feed.innerHTML +=
     '<div class="msg user"><div class="msg-label">You</div>' +
-    '<div class="msg-bubble" style="font-family:\'JetBrains Mono\',monospace;font-size:12px;white-space:pre-line;">' +
+    '<div class="msg-bubble" style="font-family:\'JetBrains Mono\',monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;">' +
     escapeHtml(text) +
     "</div></div>";
 
@@ -114,6 +116,17 @@ async function parseListing() {
     if (finalResult) {
       showExtractedData(finalResult);
       populateCalculator(finalResult);
+      parsedProperties.push({
+        address: finalResult["Address"] || "Unknown",
+        city: finalResult["City"] || "",
+        price: finalResult["Price"] || "",
+        units: finalResult["Total Units"] || "",
+        noi: finalResult["NOI"] || "",
+        capRate: finalResult["Cap Rate"] || "",
+        annualRent: finalResult["Annual Rent Income (Projected)"] || finalResult["Annual Rent Income (Actual)"] || "",
+        url: finalResult["Link"] || "",
+        timestamp: new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"})
+      });
     }
   } catch (e) {
     feed.innerHTML +=
@@ -233,6 +246,22 @@ function populateCalculator(data) {
 function parseCurrency(str) {
   if (!str) return "";
   return str.replace(/[$,]/g, "");
+}
+
+function showPortfolio() {
+  var container = document.getElementById('results');
+  if (parsedProperties.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div style="font-size:48px;text-align:center;margin:60px 0 16px;">📊</div><p style="text-align:center;color:var(--text-dim);font-size:14px;">No properties parsed yet. Paste a listing URL to get started.</p></div>';
+    return;
+  }
+  var html = '<div class="sec-header" style="margin-top:0;">Portfolio — Session Log</div>';
+  html += '<div class="tbl-container"><table class="tbl"><thead><tr><th>Address</th><th>Price</th><th>Units</th><th>Cap Rate</th><th>NOI</th><th>Annual Rent</th><th>Parsed</th></tr></thead><tbody>';
+  for (var i = parsedProperties.length - 1; i >= 0; i--) {
+    var p = parsedProperties[i];
+    html += '<tr><td>' + (p.address || '--') + '</td><td>' + (p.price || '--') + '</td><td>' + (p.units || '--') + '</td><td>' + (p.capRate || '--') + '</td><td>' + (p.noi || '--') + '</td><td>' + (p.annualRent || '--') + '</td><td style="font-size:11px;color:var(--text-dim);">' + p.timestamp + '</td></tr>';
+  }
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
 }
 
 function escapeHtml(str) {

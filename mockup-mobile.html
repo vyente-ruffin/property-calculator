@@ -1,836 +1,766 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>405 Network — Mobile Mockups</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
-    /* ============================================
-       SHOWCASE PAGE — Two phone frames side by side
-       ============================================ */
-    :root {
-      --midnight:     #06090f;
-      --void:         #0b0f1a;
-      --surface:      #111827;
-      --surface-2:    #1a2234;
-      --surface-3:    #212d42;
-      --border:       #1e293b;
-      --border-light: #2a3a52;
-      --gold:         #d4a853;
-      --gold-dim:     #a67c3b;
-      --gold-glow:    rgba(212, 168, 83, 0.08);
-      --gold-border:  rgba(212, 168, 83, 0.15);
-      --up:           #34d399;
-      --up-bg:        rgba(52, 211, 153, 0.08);
-      --up-border:    rgba(52, 211, 153, 0.2);
-      --caution:      #fbbf24;
-      --caution-bg:   rgba(251, 191, 36, 0.08);
-      --caution-border: rgba(251, 191, 36, 0.2);
-      --down:         #f87171;
-      --down-bg:      rgba(248, 113, 113, 0.06);
-      --down-border:  rgba(248, 113, 113, 0.2);
-      --text:         #e2e8f0;
-      --text-2:       #94a3b8;
-      --text-3:       #64748b;
-      --text-white:   #f8fafc;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Property Analyzer — Mobile Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      background: #030507;
-      font-family: 'Outfit', sans-serif;
-      color: var(--text);
-      min-height: 100vh;
-      padding: 40px 20px;
-      -webkit-font-smoothing: antialiased;
-    }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: #1a1a2e;
+  color: #c8cad0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  min-height: 100vh;
+}
 
-    .page-title {
-      text-align: center;
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text-white);
-      margin-bottom: 6px;
-      letter-spacing: -0.5px;
-    }
-    .page-sub {
-      text-align: center;
-      font-size: 14px;
-      color: var(--text-3);
-      margin-bottom: 40px;
-    }
+/* ─── Viewport Switcher ─── */
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+.controls label {
+  font-size: 13px;
+  color: #8b8fa3;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+.controls button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: 1px solid #2a2d3a;
+  background: #181b25;
+  color: #8b8fa3;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.controls button:hover { border-color: #d4a853; color: #e8eaf0; }
+.controls button.active {
+  background: linear-gradient(135deg, #d4a853, #c9953a);
+  color: #000;
+  border-color: transparent;
+  font-weight: 600;
+}
 
-    .showcase {
-      display: flex;
-      justify-content: center;
-      gap: 60px;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
+/* ─── Device Frame ─── */
+.device-frame {
+  border: 2px solid #2a2d3a;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #0f1117;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+.device-frame.portrait { width: 375px; height: 812px; }
+.device-frame.landscape { width: 812px; height: 375px; }
 
-    .phone-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-    .phone-label {
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--gold);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
+.device-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-    /* Phone bezel */
-    .phone {
-      background: #1a1a1a;
-      border-radius: 40px;
-      padding: 12px;
-      box-shadow:
-        0 0 0 2px #333,
-        0 20px 60px rgba(0,0,0,0.6),
-        inset 0 0 0 1px rgba(255,255,255,0.05);
-      position: relative;
-    }
-    .phone::before {
-      content: '';
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90px;
-      height: 22px;
-      background: #1a1a1a;
-      border-radius: 0 0 14px 14px;
-      z-index: 100;
-    }
-    .phone-v { width: 393px; height: 852px; }
-    .phone-h { width: 852px; height: 393px; }
-    .phone-h::before {
-      top: 50%;
-      left: 12px;
-      transform: translateY(-50%) rotate(90deg);
-      transform-origin: center;
-    }
+/* ─── Shared Variables ─── */
+:root {
+  --bg: #0f1117;
+  --bg-card: #181b25;
+  --bg-input: #1e2130;
+  --border: #2a2d3a;
+  --text: #e8eaf0;
+  --text-muted: #8b8fa3;
+  --text-dim: #5a5e72;
+  --gold: #d4a853;
+  --up: #34d399;
+  --down: #f87171;
+  --caution: #fbbf24;
+  --sidebar-bg: #14161e;
+  --tbl-head: #1a1d28;
+  --tbl-border: #2a2d3a;
+  --tbl-stripe: rgba(255,255,255,0.02);
+}
 
-    .phone-screen {
-      width: 100%;
-      height: 100%;
-      border-radius: 28px;
-      overflow: hidden;
-      background: var(--midnight);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
+/* ─── Header ─── */
+.m-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 12px;
+  background: #111318;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.m-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.m-logo {
+  width: 24px; height: 24px; border-radius: 5px;
+  background: linear-gradient(135deg, var(--gold), #c9953a);
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 9px; color: #000;
+}
+.m-brand { font-weight: 600; font-size: 13px; color: var(--text-muted); }
+.m-title { font-size: 14px; color: var(--text-muted); font-weight: 400; }
+.m-theme-btn {
+  background: none; border: none; font-size: 16px; cursor: pointer;
+  width: 28px; height: 28px; border-radius: 4px;
+  display: grid; place-items: center;
+}
 
-    /* Noise */
-    .phone-screen::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      opacity: 0.02;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 999;
-    }
+/* ─── Tab Bar ─── */
+.tab-bar {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: #111318;
+  flex-shrink: 0;
+}
+.tab-bar button {
+  flex: 1;
+  padding: 10px 0 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: color 0.2s;
+}
+.tab-bar button .tab-icon { font-size: 18px; }
+.tab-bar button.active { color: var(--gold); }
 
-    /* ===== SHARED COMPONENT STYLES ===== */
-    .m-header {
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      height: 44px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      padding-top: 4px;
-    }
-    .m-brand {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-    .m-brand-mark {
-      width: 22px; height: 22px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
-      border-radius: 5px;
-      display: grid;
-      place-items: center;
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-weight: 800;
-      font-size: 10px;
-      color: var(--midnight);
-    }
-    .m-brand-name {
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-weight: 600;
-      font-size: 13px;
-      color: var(--text-white);
-    }
-    .m-brand-name b { color: var(--gold); font-weight: 600; }
-    .m-dot {
-      margin-left: auto;
-      width: 6px; height: 6px;
-      background: var(--up);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--up);
-    }
+/* ─── Content Panels ─── */
+.m-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.m-content::-webkit-scrollbar { width: 4px; }
+.m-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    /* Tab bar */
-    .m-tabs {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .m-tab {
-      flex: 1;
-      padding: 10px 0;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-3);
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      position: relative;
-    }
-    .m-tab.active { color: var(--gold); }
-    .m-tab.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 20%; right: 20%;
-      height: 2px;
-      background: var(--gold);
-      border-radius: 2px 2px 0 0;
-    }
+.m-panel { display: none; height: 100%; overflow-y: auto; }
+.m-panel.active { display: block; }
 
-    /* Scroll area */
-    .m-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px 14px 20px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .m-scroll::-webkit-scrollbar { width: 3px; }
-    .m-scroll::-webkit-scrollbar-track { background: transparent; }
-    .m-scroll::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+/* ─── Chat Panel ─── */
+.m-chat {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+.m-chat.active { display: flex; }
+.m-chat-feed {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.m-msg { max-width: 88%; }
+.m-msg.user { align-self: flex-end; }
+.m-msg.system { align-self: flex-start; }
+.m-msg-label {
+  font-size: 9px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 3px; color: var(--text-dim);
+}
+.m-msg.user .m-msg-label { text-align: right; }
+.m-msg-bubble {
+  padding: 8px 12px; border-radius: 12px;
+  font-size: 12px; line-height: 1.6;
+  word-break: break-all; overflow-wrap: break-word;
+}
+.m-msg.user .m-msg-bubble {
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-bottom-right-radius: 4px; color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  white-space: pre-wrap;
+}
+.m-msg.system .m-msg-bubble {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-bottom-left-radius: 4px; color: var(--text-muted);
+}
+.m-chat-input {
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.m-chat-input textarea {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+}
+.m-chat-input .m-parse-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--gold), #c9953a);
+  color: #000;
+  border: none;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
 
-    /* Bottom safe area */
-    .m-bottom-safe {
-      height: 20px;
-      background: var(--surface);
-      flex-shrink: 0;
-    }
+/* ─── Pipeline ─── */
+.m-pipeline {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  overflow: hidden;
+}
+.m-pipeline-header {
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.m-pipeline-header .check { color: var(--up); }
+.m-steps { padding: 0 10px 8px; }
+.m-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 11px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.m-step:last-child { border-bottom: none; }
+.m-step-icon { width: 14px; text-align: center; font-size: 10px; }
+.m-step-name { color: var(--up); font-weight: 500; min-width: 80px; }
+.m-step-detail { color: var(--text-dim); font-size: 10px; font-family: monospace; }
 
-    /* ===== CHAT COMPONENTS ===== */
-    .m-chat-feed { display: flex; flex-direction: column; gap: 10px; }
+/* ─── Calculator / Sidebar ─── */
+.m-sidebar { padding: 12px; }
+.m-sidebar h2 {
+  font-size: 16px; font-weight: 600; color: var(--text);
+  margin: 0 0 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.m-sidebar h2:not(:first-child) { margin-top: 16px; }
+.m-field { margin-bottom: 10px; }
+.m-field label {
+  display: block; font-size: 13px; color: var(--text);
+  margin-bottom: 3px; font-weight: 400;
+}
+.m-field input {
+  width: 100%; padding: 8px 10px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg-input);
+  color: var(--text); font-size: 15px; font-family: inherit;
+  outline: none;
+}
+.m-field input:focus { border-color: var(--gold); }
+.m-type-toggle {
+  display: flex; gap: 0; margin-bottom: 12px;
+  border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+}
+.m-type-toggle button {
+  flex: 1; padding: 7px 0; border: none; font-size: 13px;
+  font-family: inherit; cursor: pointer;
+  background: transparent; color: var(--text-muted);
+}
+.m-type-toggle button.active {
+  background: var(--gold); color: #000; font-weight: 600;
+}
+.m-field-hint { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.m-field-hint strong { color: var(--text); }
 
-    .m-msg { max-width: 92%; }
-    .m-msg.user { align-self: flex-end; }
-    .m-msg.sys { align-self: flex-start; }
-    .m-msg-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 3px; }
-    .m-msg.user .m-msg-label { text-align: right; }
+/* ─── Results ─── */
+.m-results { padding: 12px; }
+.m-sec-header {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  margin: 10px 0 4px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.m-sec-header:first-child { margin-top: 0; }
 
-    .m-bubble {
-      padding: 10px 13px;
-      border-radius: 14px;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .m-msg.user .m-bubble {
-      background: linear-gradient(135deg, var(--surface-3), var(--surface-2));
-      border: 1px solid var(--border-light);
-      border-bottom-right-radius: 4px;
-    }
-    .m-msg.sys .m-bubble {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-    }
+/* Deal eval */
+.m-deal-eval {
+  padding: 8px 10px; border-radius: 6px;
+  font-size: 13px; font-weight: 600; margin-bottom: 6px;
+  background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.25);
+  color: var(--up);
+}
 
-    /* Pipeline */
-    .m-pipeline {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--surface);
-      overflow: hidden;
-    }
-    .m-pipeline-toggle {
-      padding: 9px 12px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-2);
-      cursor: pointer;
-    }
-    .m-pipeline-toggle .chk { color: var(--up); }
-    .m-pipeline-toggle .chv { margin-left: auto; font-size: 9px; color: var(--text-3); }
-    .m-pipeline-steps { padding: 0 12px 8px; }
-    .m-step {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 0;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-    }
-    .m-step:last-child { border-bottom: none; }
-    .m-step-ic { width: 14px; text-align: center; font-size: 11px; }
-    .m-step-nm { font-weight: 500; color: var(--text); min-width: 80px; font-size: 11.5px; }
-    .m-step-dt { color: var(--text-3); font-size: 10.5px; font-family: 'JetBrains Mono', monospace; }
-    .m-step.done .m-step-nm { color: var(--up); }
-    .m-step.skip { opacity: 0.4; }
+/* Summary grid */
+.m-summary-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden; margin-bottom: 8px;
+}
+.m-summary-cell { background: var(--bg-card); padding: 6px 8px; }
+.m-summary-label { font-size: 10px; color: var(--text-muted); }
+.m-summary-val { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.m-summary-sub { font-size: 9px; color: var(--text-dim); }
 
-    /* Extract grid */
-    .m-extract {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 1px 10px;
-      margin-top: 6px;
-    }
-    .m-ek { font-size: 11px; color: var(--text-3); padding: 2px 0; }
-    .m-ev { font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 500; color: var(--text-white); padding: 2px 0; }
-    .m-populated {
-      margin-top: 8px;
-      font-size: 10.5px;
-      color: var(--gold);
-      font-weight: 500;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .m-populated::before { content: ''; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; }
+/* Table */
+.m-tbl-container {
+  border-radius: 6px; border: 1px solid var(--tbl-border);
+  overflow-x: auto; margin-bottom: 6px;
+}
+.m-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.m-tbl thead { background: var(--tbl-head); }
+.m-tbl th {
+  padding: 4px 6px; text-align: left; font-weight: 600;
+  font-size: 10px; color: var(--text-muted);
+  border-bottom: 1px solid var(--tbl-border);
+}
+.m-tbl th:not(:first-child) { text-align: right; }
+.m-tbl td {
+  padding: 3px 6px; border-bottom: 1px solid var(--tbl-border);
+  font-size: 12px;
+}
+.m-tbl td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.m-tbl tbody tr:nth-child(even) { background: var(--tbl-stripe); }
+.m-tbl tbody tr:last-child td { border-bottom: none; }
+.m-tbl .row-total td { font-weight: 700; border-top: 2px solid var(--tbl-border); background: var(--tbl-head); }
 
-    /* Chat input */
-    .m-compose {
-      padding: 8px 12px 4px;
-      border-top: 1px solid var(--border);
-      background: var(--void);
-      flex-shrink: 0;
-    }
-    .m-compose-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      padding: 6px 8px 6px 12px;
-      gap: 8px;
-    }
-    .m-compose-box input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-family: 'Outfit', sans-serif;
-      font-size: 13px;
-      outline: none;
-    }
-    .m-compose-box input::placeholder { color: var(--text-3); }
-    .m-compose-btn {
-      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
-      color: var(--midnight);
-      border: none;
-      padding: 7px 14px;
-      border-radius: 8px;
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-weight: 600;
-      font-size: 12px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
+/* Footer bar */
+.m-footer {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+.m-footer-btn {
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border-radius: 5px;
+  border: 1px solid var(--border); background: var(--bg-input);
+  color: var(--text-muted); font-size: 11px; cursor: pointer;
+  font-family: inherit;
+}
+.m-footer-btn.gold {
+  background: linear-gradient(135deg, var(--gold), #c9953a);
+  color: #000; border-color: transparent; font-weight: 600;
+}
+.m-footer-status { margin-left: auto; font-size: 10px; color: var(--text-dim); }
 
-    /* ===== CALC COMPONENTS ===== */
-    .m-type-bar {
-      display: flex; gap: 0; margin-bottom: 12px;
-    }
-    .m-type-bar button {
-      flex: 1; padding: 9px; border: 1px solid var(--border);
-      background: var(--surface); color: var(--text-3);
-      font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer;
-    }
-    .m-type-bar button:first-child { border-radius: 8px 0 0 8px; }
-    .m-type-bar button:last-child { border-radius: 0 8px 8px 0; }
-    .m-type-bar button.active { background: var(--gold); color: var(--midnight); font-weight: 600; border-color: var(--gold); }
+/* ─── Landscape Layout ─── */
+.device-frame.landscape .m-content-landscape {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.device-frame.landscape .m-col-left {
+  width: 40%;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  padding: 10px;
+}
+.device-frame.landscape .m-col-right {
+  width: 60%;
+  overflow-y: auto;
+  padding: 10px;
+}
 
-    /* Listing bar */
-    .m-listing {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 12px; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px;
-    }
-    .m-listing a { font-size: 12px; color: var(--gold); text-decoration: none; font-weight: 500; }
-    .m-listing .m-badge {
-      font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
-      padding: 3px 7px; border-radius: 5px;
-      color: var(--caution); background: var(--caution-bg); border: 1px solid var(--caution-border);
-    }
+/* Chat overlay for landscape */
+.m-chat-overlay {
+  display: none;
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+}
+.m-chat-overlay.active { display: flex; }
+.m-chat-overlay-panel {
+  width: 300px;
+  height: 100%;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
 
-    /* Verdict */
-    .m-verdict {
-      border-radius: 12px; padding: 14px; margin-bottom: 14px;
-      display: flex; gap: 10px; align-items: flex-start;
-      position: relative; overflow: hidden;
-    }
-    .m-verdict.review { background: var(--caution-bg); border: 1px solid var(--caution-border); }
-    .m-verdict::before {
-      content: ''; position: absolute; top: -30px; left: -30px;
-      width: 100px; height: 100px; border-radius: 50%;
-      filter: blur(40px); opacity: 0.12;
-    }
-    .m-verdict.review::before { background: var(--caution); }
-    .m-verdict-icon { font-size: 24px; position: relative; z-index: 1; flex-shrink: 0; }
-    .m-verdict-body { position: relative; z-index: 1; }
-    .m-verdict-lbl {
-      font-family: 'Bricolage Grotesque', sans-serif; font-size: 9px;
-      font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
-      color: var(--caution); margin-bottom: 1px;
-    }
-    .m-verdict-title {
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-weight: 700; font-size: 15px; color: var(--text-white);
-      margin-bottom: 5px; letter-spacing: -0.3px;
-    }
-    .m-verdict-reasons { list-style: none; }
-    .m-verdict-reasons li {
-      font-size: 11.5px; color: var(--text-2); line-height: 1.6;
-      padding-left: 10px; position: relative;
-    }
-    .m-verdict-reasons li::before { content: '—'; position: absolute; left: 0; color: var(--text-3); }
-
-    /* Metric cards */
-    .m-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-    .m-mc {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 12px; position: relative; overflow: hidden;
-    }
-    .m-mc::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
-    .m-mc.up { border-color: var(--up-border); }
-    .m-mc.up::after { background: var(--up); }
-    .m-mc.caution { border-color: var(--caution-border); }
-    .m-mc.caution::after { background: var(--caution); }
-    .m-mc.down { border-color: var(--down-border); }
-    .m-mc.down::after { background: var(--down); }
-    .m-mc-label { font-size: 9.5px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-    .m-mc-val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; letter-spacing: -1px; }
-    .m-mc.up .m-mc-val { color: var(--up); }
-    .m-mc.caution .m-mc-val { color: var(--caution); }
-    .m-mc.down .m-mc-val { color: var(--down); }
-    .m-mc-sub { font-size: 10px; color: var(--text-3); margin-top: 1px; }
-
-    .m-metrics-sm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
-    .m-msm {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px; text-align: center;
-    }
-    .m-msm .m-mc-label { margin-bottom: 2px; }
-    .m-msm .m-mc-val { font-size: 15px; color: var(--text-white); }
-
-    /* NOI compare */
-    .m-noi { display: flex; align-items: stretch; gap: 0; margin-bottom: 14px; }
-    .m-noi-card {
-      flex: 1; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px; text-align: center;
-    }
-    .m-noi-label { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
-    .m-noi-val { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; color: var(--text-white); }
-    .m-noi-delta {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px;
-    }
-    .m-noi-delta-v { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 12px; color: var(--caution); }
-    .m-noi-delta-t { font-size: 9px; color: var(--text-3); }
-
-    /* Section headers */
-    .m-sec {
-      font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
-      font-size: 11px; color: var(--text-3); text-transform: uppercase;
-      letter-spacing: 1.5px; margin-bottom: 8px; padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* Sliders */
-    .m-params { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-    .m-param-hdr { display: flex; justify-content: space-between; margin-bottom: 5px; }
-    .m-param-lbl { font-size: 10.5px; color: var(--text-2); font-weight: 500; }
-    .m-param-v { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text-white); }
-    .m-params input[type="range"] {
-      -webkit-appearance: none; width: 100%; height: 4px;
-      background: var(--border); border-radius: 2px; outline: none;
-    }
-    .m-params input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 20px; height: 20px;
-      background: var(--gold); border-radius: 50%; cursor: pointer;
-      box-shadow: 0 0 8px rgba(212,168,83,0.3);
-    }
-
-    /* Table rows */
-    .m-tbl {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; overflow: hidden; margin-bottom: 12px;
-    }
-    .m-tr {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 9px 12px; font-size: 12.5px;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-    }
-    .m-tr:last-child { border-bottom: none; }
-    .m-tr-lbl { color: var(--text-2); }
-    .m-tr-val { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 12px; color: var(--text-white); }
-    .m-tr.total { border-top: 1px solid var(--border); font-weight: 700; }
-    .m-tr.total .m-tr-lbl { color: var(--text-white); }
-
-    /* Summary grid */
-    .m-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-    .m-si {
-      display: flex; flex-direction: column; gap: 1px;
-      padding: 8px 10px; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 7px;
-    }
-    .m-si-lbl { font-size: 9.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.3px; }
-    .m-si-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-white); }
-
-    /* Action bar */
-    .m-actions {
-      display: flex; gap: 6px; padding: 8px 12px 4px;
-      border-top: 1px solid var(--border); background: var(--surface);
-      flex-shrink: 0;
-    }
-    .m-btn {
-      flex: 1; padding: 10px; border-radius: 8px;
-      font-family: 'Bricolage Grotesque', sans-serif;
-      font-weight: 600; font-size: 12px; cursor: pointer;
-      border: none; text-align: center;
-    }
-    .m-btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dim)); color: var(--midnight); }
-    .m-btn-out { background: transparent; color: var(--text-2); border: 1px solid var(--border) !important; }
-
-    /* ===== HORIZONTAL-SPECIFIC ===== */
-    .h-layout {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .h-left {
-      width: 42%;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid var(--border);
-    }
-    .h-right {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .h-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px 12px 16px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .h-scroll::-webkit-scrollbar { width: 3px; }
-    .h-scroll::-webkit-scrollbar-track { background: transparent; }
-    .h-scroll::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-
-    /* Horizontal metrics: 4-across */
-    .h-metrics { grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .h-metrics .m-mc { padding: 8px; }
-    .h-metrics .m-mc-val { font-size: 18px; }
-    .h-metrics .m-mc-label { font-size: 8.5px; }
-
-    .h-metrics-sm { gap: 4px; }
-    .h-metrics-sm .m-msm { padding: 6px; }
-    .h-metrics-sm .m-mc-val { font-size: 13px; }
-
-    .h-params { gap: 8px; }
-
-    /* Utility */
-    .text-up { color: var(--up) !important; }
-    .text-caution { color: var(--caution) !important; }
-    .text-down { color: var(--down) !important; }
-  </style>
+/* Extracted data */
+.m-extracted {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg-card);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.m-extracted-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 8px; background: var(--tbl-head);
+  border-bottom: 1px solid var(--border);
+}
+.m-extracted-label { font-size: 9px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.m-extracted-addr { font-size: 12px; font-weight: 600; color: var(--gold); }
+.m-extracted-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border);
+}
+.m-extracted-cell { background: var(--bg-card); padding: 4px 8px; }
+.m-extracted-cell .ek { font-size: 9px; color: var(--text-dim); }
+.m-extracted-cell .ev { font-size: 12px; font-weight: 600; color: var(--text); }
+</style>
 </head>
 <body>
 
-  <div class="page-title">Mobile Mockups</div>
-  <div class="page-sub">Portrait & Landscape — scrollable, all content accessible</div>
+<div class="controls">
+  <label>Viewport</label>
+  <button class="active" id="btnPortrait" onclick="switchView('portrait')">📱 Portrait (375×812)</button>
+  <button id="btnLandscape" onclick="switchView('landscape')">📱 Landscape (812×375)</button>
+</div>
 
-  <div class="showcase">
+<!-- ═══════════════════════════════════════════
+     PORTRAIT VIEW (375×812)
+     ═══════════════════════════════════════════ -->
+<div class="device-frame portrait" id="portraitFrame">
+  <div class="device-inner">
+    <div class="m-header">
+      <div class="m-header-left">
+        <div class="m-logo">4N</div>
+        <span class="m-brand">405 Network</span>
+      </div>
+      <span class="m-title">Property Analyzer</span>
+      <button class="m-theme-btn">☀️</button>
+    </div>
 
-    <!-- ===================================
-         PORTRAIT (Vertical)
-         =================================== -->
-    <div class="phone-group">
-      <div class="phone-label">Portrait</div>
-      <div class="phone phone-v">
-        <div class="phone-screen">
-
-          <div class="m-header">
-            <div class="m-brand">
-              <div class="m-brand-mark">4N</div>
-              <div class="m-brand-name"><b>405</b> Network</div>
-            </div>
-            <div class="m-dot"></div>
+    <div class="m-content">
+      <!-- Chat Panel -->
+      <div class="m-chat" id="pChat">
+        <div class="m-chat-feed">
+          <div class="m-msg system">
+            <div class="m-msg-bubble">Paste a property listing — raw text or URL — and I'll extract the data and run the investment analysis.</div>
           </div>
-
-          <div class="m-tabs">
-            <button class="m-tab">⚡ Parse</button>
-            <button class="m-tab active">📊 Analyze</button>
-            <button class="m-tab">📋 Saved</button>
+          <div class="m-msg user">
+            <div class="m-msg-label">You</div>
+            <div class="m-msg-bubble" style="font-family:'JetBrains Mono',monospace;font-size:11px;white-space:pre-wrap;word-break:break-all;">https://www.crexi.com/properties/1234567/california-2345-olivewood-ave</div>
           </div>
-
-          <div class="m-scroll">
-            <!-- Type toggle -->
-            <div class="m-type-bar">
-              <button>Residential</button>
-              <button class="active">Commercial</button>
-            </div>
-
-            <!-- Listing -->
-            <div class="m-listing">
-              <a href="#">↗ 252 W 11th St</a>
-              <span class="m-badge">↓ $591K</span>
-            </div>
-
-            <!-- Verdict -->
-            <div class="m-verdict review">
-              <div class="m-verdict-icon">⚠️</div>
-              <div class="m-verdict-body">
-                <div class="m-verdict-lbl">Review</div>
-                <div class="m-verdict-title">Mixed Signals</div>
-                <ul class="m-verdict-reasons">
-                  <li>DSCR 1.18x below 1.25x lender threshold</li>
-                  <li>Cash-on-Cash 6.2% below 8% target</li>
-                  <li>Break-even 79% provides cushion</li>
-                </ul>
+          <div class="m-msg system">
+            <div class="m-pipeline">
+              <div class="m-pipeline-header">
+                <span class="check">✅</span>
+                <span>2345 Olivewood Ave — Analyzed</span>
+              </div>
+              <div class="m-steps">
+                <div class="m-step"><span class="m-step-icon">✅</span><span class="m-step-name">parse input</span></div>
+                <div class="m-step"><span class="m-step-icon">✅</span><span class="m-step-name">scrape url</span><span class="m-step-detail">4,218 chars</span></div>
+                <div class="m-step"><span class="m-step-icon">✅</span><span class="m-step-name">extract fields</span><span class="m-step-detail">12/15</span></div>
+                <div class="m-step"><span class="m-step-icon">✅</span><span class="m-step-name">search link</span></div>
+                <div class="m-step"><span class="m-step-icon">✅</span><span class="m-step-name">rentcast</span><span class="m-step-detail">$2,150/mo</span></div>
+                <div class="m-step"><span class="m-step-icon">⏭</span><span class="m-step-name" style="color:var(--text-dim);">reextract</span></div>
+                <div class="m-step"><span class="m-step-icon">✅</span><span class="m-step-name">validate</span><span class="m-step-detail">pass</span></div>
               </div>
             </div>
+          </div>
+        </div>
+        <div class="m-chat-input">
+          <textarea rows="1" placeholder="Paste listing text or URL..."></textarea>
+          <button class="m-parse-btn">Parse</button>
+        </div>
+      </div>
 
-            <!-- Primary metrics 2x2 -->
-            <div class="m-metrics">
-              <div class="m-mc caution"><div class="m-mc-label">Cap Rate</div><div class="m-mc-val">5.4%</div><div class="m-mc-sub">Moderate</div></div>
-              <div class="m-mc caution"><div class="m-mc-label">Cash-on-Cash</div><div class="m-mc-val">6.2%</div><div class="m-mc-sub">Below 8%</div></div>
-              <div class="m-mc down"><div class="m-mc-label">DSCR</div><div class="m-mc-val">1.18×</div><div class="m-mc-sub">Below 1.25×</div></div>
-              <div class="m-mc up"><div class="m-mc-label">Est. NOI</div><div class="m-mc-val">$95K</div><div class="m-mc-sub">Positive</div></div>
-            </div>
+      <!-- Calculator Panel -->
+      <div class="m-panel" id="pCalc">
+        <div class="m-sidebar">
+          <h2>Investment Parameters</h2>
+          <div class="m-type-toggle">
+            <button class="active">🏢 Commercial</button>
+            <button>🏠 Residential</button>
+          </div>
+          <div class="m-field"><label>Purchase Price</label><input type="text" value="$995,000"></div>
+          <div class="m-field"><label>Annual Gross Rents</label><input type="text" value="$103,200"></div>
+          <div class="m-field"><label>NOI (from listing)</label><input type="text" value="$62,500"></div>
+          <div class="m-field"><label>Total Units</label><input type="text" value="6"></div>
 
-            <!-- Secondary -->
-            <div class="m-metrics-sm">
-              <div class="m-msm"><div class="m-mc-label">$/Unit</div><div class="m-mc-val">$246K</div></div>
-              <div class="m-msm"><div class="m-mc-label">Break-Even</div><div class="m-mc-val text-up">79%</div></div>
-              <div class="m-msm"><div class="m-mc-label">GRM</div><div class="m-mc-val">12.9×</div></div>
-            </div>
+          <h2>Financing</h2>
+          <div class="m-field">
+            <label>Down Payment (%)</label>
+            <input type="text" value="25">
+            <div class="m-field-hint">Down: <strong>$248,750</strong> &nbsp; Loan: <strong>$746,250</strong></div>
+          </div>
+          <div class="m-field"><label>Interest Rate (%)</label><input type="text" value="7.25"></div>
+          <div class="m-field"><label>Loan Term (years)</label><input type="text" value="30"></div>
 
-            <!-- NOI -->
-            <div class="m-sec">NOI Comparison</div>
-            <div class="m-noi">
-              <div class="m-noi-card"><div class="m-noi-label">Broker</div><div class="m-noi-val">$106K</div></div>
-              <div class="m-noi-delta"><div class="m-noi-delta-v">−10.5%</div><div class="m-noi-delta-t">Delta</div></div>
-              <div class="m-noi-card"><div class="m-noi-label">Estimated</div><div class="m-noi-val">$95K</div></div>
-            </div>
+          <h2>Expenses</h2>
+          <div class="m-field"><label>Annual Property Tax</label><input type="text" value="$12,438"></div>
+          <div class="m-field"><label>Annual Insurance</label><input type="text" value="$4,975"></div>
+          <div class="m-field"><label>Vacancy Rate (%)</label><input type="text" value="5"></div>
+        </div>
+      </div>
 
-            <!-- Sliders -->
-            <div class="m-sec">Parameters</div>
-            <div class="m-params">
-              <div><div class="m-param-hdr"><span class="m-param-lbl">Down</span><span class="m-param-v">30%</span></div><input type="range" min="0" max="100" value="30"></div>
-              <div><div class="m-param-hdr"><span class="m-param-lbl">Vacancy</span><span class="m-param-v">3%</span></div><input type="range" min="0" max="50" value="3"></div>
-              <div><div class="m-param-hdr"><span class="m-param-lbl">Rate</span><span class="m-param-v">6.5%</span></div><input type="range" min="0" max="20" value="6.5" step="0.1"></div>
-              <div><div class="m-param-hdr"><span class="m-param-lbl">Term</span><span class="m-param-v">25 yrs</span></div><input type="range" min="1" max="30" value="25"></div>
-            </div>
+      <!-- Results Panel -->
+      <div class="m-panel" id="pResults">
+        <div class="m-results">
+          <div class="m-sec-header" style="margin-top:0;">Deal Evaluation</div>
+          <div class="m-deal-eval">✅ GOOD DEAL — Cap rate 6.28% exceeds 5% minimum threshold</div>
 
-            <!-- Expenses -->
-            <div class="m-sec">Operating Expenses</div>
-            <div class="m-tbl">
-              <div class="m-tr"><span class="m-tr-lbl">Loan P&I</span><span class="m-tr-val">$7,249/mo</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">Insurance</span><span class="m-tr-val">$2,052/mo</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">Taxes</span><span class="m-tr-val">$2,052/mo</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">PM Fee</span><span class="m-tr-val">$507/mo</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">Other</span><span class="m-tr-val">$417/mo</span></div>
-              <div class="m-tr total"><span class="m-tr-lbl">Total</span><span class="m-tr-val">$12,277/mo</span></div>
-            </div>
-
-            <!-- Analysis -->
-            <div class="m-sec">Analysis</div>
-            <div class="m-tbl">
-              <div class="m-tr"><span class="m-tr-lbl">Gross Rents</span><span class="m-tr-val">$152,195</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">Adj. Gross</span><span class="m-tr-val">$147,629</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">NOI (Est.)</span><span class="m-tr-val text-up" style="font-weight:700">$95,381</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">Debt Service</span><span class="m-tr-val">$86,990</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">Cash Flow</span><span class="m-tr-val text-up" style="font-weight:700">$8,391</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">Cash-on-Cash</span><span class="m-tr-val text-caution" style="font-weight:700">6.2%</span></div>
-              <div class="m-tr"><span class="m-tr-lbl">Cash Down</span><span class="m-tr-val">$650,100</span></div>
-            </div>
-
-            <!-- Summary -->
-            <div class="m-sec">Summary</div>
-            <div class="m-summary">
-              <div class="m-si"><span class="m-si-lbl">Purchase</span><span class="m-si-val">$1.97M</span></div>
-              <div class="m-si"><span class="m-si-lbl">Loan</span><span class="m-si-val">$1.38M</span></div>
-              <div class="m-si"><span class="m-si-lbl">Down</span><span class="m-si-val">$591K</span></div>
-              <div class="m-si"><span class="m-si-lbl">Monthly P&I</span><span class="m-si-val">$7,249</span></div>
-              <div class="m-si"><span class="m-si-lbl">Closing</span><span class="m-si-val">$59,100</span></div>
-              <div class="m-si"><span class="m-si-lbl">NOI</span><span class="m-si-val text-up">$95,381</span></div>
-              <div class="m-si"><span class="m-si-lbl">Total Cash</span><span class="m-si-val">$650K</span></div>
-              <div class="m-si"><span class="m-si-lbl">Cash Flow</span><span class="m-si-val text-up">$8,391/yr</span></div>
-            </div>
+          <div class="m-sec-header">Investment Summary</div>
+          <div class="m-summary-grid">
+            <div class="m-summary-cell"><div class="m-summary-label">Cap Rate</div><div class="m-summary-val" style="color:var(--up);">6.28%</div></div>
+            <div class="m-summary-cell"><div class="m-summary-label">Cash-on-Cash</div><div class="m-summary-val" style="color:var(--up);">3.42%</div></div>
+            <div class="m-summary-cell"><div class="m-summary-label">Monthly Cash Flow</div><div class="m-summary-val" style="color:var(--up);">$709</div><div class="m-summary-sub">$118/unit</div></div>
+            <div class="m-summary-cell"><div class="m-summary-label">Annual Cash Flow</div><div class="m-summary-val" style="color:var(--up);">$8,510</div></div>
+            <div class="m-summary-cell"><div class="m-summary-label">NOI</div><div class="m-summary-val">$62,500</div></div>
+            <div class="m-summary-cell"><div class="m-summary-label">DSCR</div><div class="m-summary-val">1.16</div></div>
+            <div class="m-summary-cell"><div class="m-summary-label">Price/Unit</div><div class="m-summary-val">$165,833</div></div>
+            <div class="m-summary-cell"><div class="m-summary-label">GRM</div><div class="m-summary-val">9.64</div></div>
           </div>
 
-          <!-- Actions -->
-          <div class="m-actions">
-            <button class="m-btn m-btn-gold">💾 Save</button>
-            <button class="m-btn m-btn-out">🔗 Share</button>
-            <button class="m-btn m-btn-out">📊 Compare</button>
+          <div class="m-sec-header">Income & Expenses</div>
+          <div class="m-tbl-container">
+            <table class="m-tbl">
+              <thead><tr><th>Item</th><th>Annual</th><th>Monthly</th></tr></thead>
+              <tbody>
+                <tr><td>Gross Rents</td><td>$103,200</td><td>$8,600</td></tr>
+                <tr><td>Vacancy (5%)</td><td style="color:var(--down);">−$5,160</td><td style="color:var(--down);">−$430</td></tr>
+                <tr><td>Effective Gross</td><td>$98,040</td><td>$8,170</td></tr>
+                <tr class="row-total"><td>NOI</td><td>$62,500</td><td>$5,208</td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="m-bottom-safe"></div>
 
+          <div class="m-sec-header">Expenses Breakdown</div>
+          <div class="m-tbl-container">
+            <table class="m-tbl">
+              <thead><tr><th>Expense</th><th>Annual</th><th>Monthly</th></tr></thead>
+              <tbody>
+                <tr><td>Property Tax</td><td>$12,438</td><td>$1,036</td></tr>
+                <tr><td>Insurance</td><td>$4,975</td><td>$415</td></tr>
+                <tr><td>Maintenance</td><td>$7,692</td><td>$641</td></tr>
+                <tr><td>Management (8%)</td><td>$7,843</td><td>$654</td></tr>
+                <tr><td>Reserves</td><td>$2,592</td><td>$216</td></tr>
+                <tr class="row-total"><td>Total Expenses</td><td>$35,540</td><td>$2,962</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="m-sec-header">Financing</div>
+          <div class="m-tbl-container">
+            <table class="m-tbl">
+              <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+              <tbody>
+                <tr><td>Purchase Price</td><td>$995,000</td></tr>
+                <tr><td>Down Payment (25%)</td><td>$248,750</td></tr>
+                <tr><td>Loan Amount</td><td>$746,250</td></tr>
+                <tr><td>Interest Rate</td><td>7.25%</td></tr>
+                <tr><td>Monthly P&I</td><td>$5,089</td></tr>
+                <tr class="row-total"><td>Annual Debt Service</td><td>$61,068</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="m-sec-header">Parsed Listing Data</div>
+          <div class="m-extracted">
+            <div class="m-extracted-header">
+              <span class="m-extracted-label">Extracted Fields</span>
+              <span class="m-extracted-addr">2345 Olivewood Ave, Long Beach, CA 90815</span>
+            </div>
+            <div class="m-extracted-grid">
+              <div class="m-extracted-cell"><div class="ek">Price</div><div class="ev">$995,000</div></div>
+              <div class="m-extracted-cell"><div class="ek">Total Units</div><div class="ev">6</div></div>
+              <div class="m-extracted-cell"><div class="ek">Cap Rate</div><div class="ev">6.28%</div></div>
+              <div class="m-extracted-cell"><div class="ek">NOI</div><div class="ev">$62,500</div></div>
+              <div class="m-extracted-cell"><div class="ek">Annual Rent</div><div class="ev">$103,200</div></div>
+              <div class="m-extracted-cell"><div class="ek">Monthly Rent</div><div class="ev">$8,600</div></div>
+              <div class="m-extracted-cell" style="grid-column:span 2;"><div class="ek">Unit Mix</div><div class="ev">4×1BR/1BA, 2×2BR/1BA</div></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ===================================
-         LANDSCAPE (Horizontal)
-         =================================== -->
-    <div class="phone-group">
-      <div class="phone-label">Landscape</div>
-      <div class="phone phone-h">
-        <div class="phone-screen">
-
-          <div class="m-header" style="padding-left:40px;">
-            <div class="m-brand">
-              <div class="m-brand-mark">4N</div>
-              <div class="m-brand-name"><b>405</b> Network</div>
-            </div>
-            <div class="m-dot"></div>
-          </div>
-
-          <div class="h-layout">
-            <!-- Left: Chat -->
-            <div class="h-left">
-              <div class="h-scroll">
-                <div class="m-chat-feed">
-                  <div class="m-msg sys">
-                    <div class="m-bubble" style="font-size:12px;">Paste a listing and I'll analyze it.</div>
-                  </div>
-                  <div class="m-msg user">
-                    <div class="m-bubble" style="font-family:'JetBrains Mono',monospace; font-size:10.5px; line-height:1.6; white-space:pre-line;">252 W 11th St, San Pedro, CA
-8-Unit · $1,970,000
-Cap: 5.46% · NOI: $106,548
-Gross: $152,195/yr</div>
-                  </div>
-                  <div class="m-msg sys">
-                    <div class="m-pipeline">
-                      <div class="m-pipeline-toggle">
-                        <span class="chk">✓</span><span style="font-size:11px;">7/7 steps complete</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="m-msg sys">
-                    <div class="m-bubble" style="font-size:11.5px;">
-                      <strong style="color:var(--text-white); font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">Extracted</strong>
-                      <div class="m-extract">
-                        <span class="m-ek">Price</span><span class="m-ev">$1,970,000</span>
-                        <span class="m-ek">Address</span><span class="m-ev">252 W 11th St</span>
-                        <span class="m-ek">Units</span><span class="m-ev">8</span>
-                        <span class="m-ek">Cap</span><span class="m-ev">5.46%</span>
-                        <span class="m-ek">NOI</span><span class="m-ev">$106,548</span>
-                        <span class="m-ek">Gross</span><span class="m-ev">$152,195</span>
-                      </div>
-                      <div class="m-populated">Calculator populated →</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="m-compose">
-                <div class="m-compose-box">
-                  <input placeholder="Paste listing...">
-                  <button class="m-compose-btn">Parse</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right: Calculator -->
-            <div class="h-right">
-              <div class="m-tabs" style="flex-shrink:0;">
-                <button class="m-tab active" style="font-size:11px;">📊 Analyze</button>
-                <button class="m-tab" style="font-size:11px;">📋 Saved</button>
-              </div>
-              <div class="h-scroll">
-                <!-- Verdict compact -->
-                <div class="m-verdict review" style="padding:10px; margin-bottom:10px;">
-                  <div class="m-verdict-icon" style="font-size:20px;">⚠️</div>
-                  <div class="m-verdict-body">
-                    <div class="m-verdict-lbl">Review</div>
-                    <div class="m-verdict-title" style="font-size:14px;">Mixed Signals — Proceed With Caution</div>
-                  </div>
-                </div>
-
-                <!-- 4-across metrics -->
-                <div class="m-metrics h-metrics">
-                  <div class="m-mc caution"><div class="m-mc-label">Cap Rate</div><div class="m-mc-val">5.4%</div></div>
-                  <div class="m-mc caution"><div class="m-mc-label">CoC</div><div class="m-mc-val">6.2%</div></div>
-                  <div class="m-mc down"><div class="m-mc-label">DSCR</div><div class="m-mc-val">1.18×</div></div>
-                  <div class="m-mc up"><div class="m-mc-label">NOI</div><div class="m-mc-val">$95K</div></div>
-                </div>
-
-                <div class="m-metrics-sm h-metrics-sm">
-                  <div class="m-msm"><div class="m-mc-label">$/Unit</div><div class="m-mc-val">$246K</div></div>
-                  <div class="m-msm"><div class="m-mc-label">B/E Occ</div><div class="m-mc-val text-up">79%</div></div>
-                  <div class="m-msm"><div class="m-mc-label">GRM</div><div class="m-mc-val">12.9×</div></div>
-                </div>
-
-                <!-- NOI -->
-                <div class="m-noi" style="margin-bottom:10px;">
-                  <div class="m-noi-card" style="padding:8px;"><div class="m-noi-label">Broker</div><div class="m-noi-val" style="font-size:15px;">$106K</div></div>
-                  <div class="m-noi-delta"><div class="m-noi-delta-v">−10.5%</div></div>
-                  <div class="m-noi-card" style="padding:8px;"><div class="m-noi-label">Estimated</div><div class="m-noi-val" style="font-size:15px;">$95K</div></div>
-                </div>
-
-                <!-- Sliders -->
-                <div class="m-params h-params" style="grid-template-columns:repeat(4,1fr); margin-bottom:10px;">
-                  <div><div class="m-param-hdr"><span class="m-param-lbl" style="font-size:9px;">Down</span><span class="m-param-v" style="font-size:10px;">30%</span></div><input type="range" value="30"></div>
-                  <div><div class="m-param-hdr"><span class="m-param-lbl" style="font-size:9px;">Vacancy</span><span class="m-param-v" style="font-size:10px;">3%</span></div><input type="range" value="3"></div>
-                  <div><div class="m-param-hdr"><span class="m-param-lbl" style="font-size:9px;">Rate</span><span class="m-param-v" style="font-size:10px;">6.5%</span></div><input type="range" value="6.5" step="0.1"></div>
-                  <div><div class="m-param-hdr"><span class="m-param-lbl" style="font-size:9px;">Term</span><span class="m-param-v" style="font-size:10px;">25yr</span></div><input type="range" value="25"></div>
-                </div>
-
-                <!-- Key analysis -->
-                <div class="m-tbl" style="margin-bottom:10px;">
-                  <div class="m-tr" style="padding:7px 10px;"><span class="m-tr-lbl" style="font-size:11.5px;">NOI (Est.)</span><span class="m-tr-val text-up" style="font-weight:700">$95,381</span></div>
-                  <div class="m-tr" style="padding:7px 10px;"><span class="m-tr-lbl" style="font-size:11.5px;">Cash Flow</span><span class="m-tr-val text-up" style="font-weight:700">$8,391</span></div>
-                  <div class="m-tr" style="padding:7px 10px;"><span class="m-tr-lbl" style="font-size:11.5px;">Cash-on-Cash</span><span class="m-tr-val text-caution" style="font-weight:700">6.2%</span></div>
-                  <div class="m-tr" style="padding:7px 10px;"><span class="m-tr-lbl" style="font-size:11.5px;">Cash Down</span><span class="m-tr-val">$650,100</span></div>
-                </div>
-
-                <!-- Summary compact -->
-                <div class="m-summary" style="grid-template-columns:repeat(4,1fr); gap:4px;">
-                  <div class="m-si" style="padding:6px 8px;"><span class="m-si-lbl" style="font-size:8px;">Purchase</span><span class="m-si-val" style="font-size:11px;">$1.97M</span></div>
-                  <div class="m-si" style="padding:6px 8px;"><span class="m-si-lbl" style="font-size:8px;">Loan</span><span class="m-si-val" style="font-size:11px;">$1.38M</span></div>
-                  <div class="m-si" style="padding:6px 8px;"><span class="m-si-lbl" style="font-size:8px;">Down</span><span class="m-si-val" style="font-size:11px;">$591K</span></div>
-                  <div class="m-si" style="padding:6px 8px;"><span class="m-si-lbl" style="font-size:8px;">Monthly</span><span class="m-si-val" style="font-size:11px;">$7,249</span></div>
-                </div>
-              </div>
-
-              <div class="m-actions" style="padding:6px 10px 2px;">
-                <button class="m-btn m-btn-gold" style="padding:8px; font-size:11px;">💾 Save</button>
-                <button class="m-btn m-btn-out" style="padding:8px; font-size:11px;">🔗 Share</button>
-                <button class="m-btn m-btn-out" style="padding:8px; font-size:11px;">📊 Compare</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="m-bottom-safe" style="height:8px;"></div>
-        </div>
-      </div>
+    <div class="m-footer" id="pFooter">
+      <button class="m-footer-btn gold">💾 Save</button>
+      <button class="m-footer-btn">🔗 Share</button>
+      <button class="m-footer-btn">📊 Portfolio</button>
+      <span class="m-footer-status">not saved</span>
     </div>
 
+    <div class="tab-bar" id="pTabBar">
+      <button class="active" onclick="switchTab('pChat',this)">
+        <span class="tab-icon">⚡</span>Chat
+      </button>
+      <button onclick="switchTab('pCalc',this)">
+        <span class="tab-icon">🧮</span>Calculator
+      </button>
+      <button onclick="switchTab('pResults',this)">
+        <span class="tab-icon">📊</span>Results
+      </button>
+    </div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     LANDSCAPE VIEW (812×375)
+     ═══════════════════════════════════════════ -->
+<div class="device-frame landscape" id="landscapeFrame" style="display:none;">
+  <div class="device-inner" style="position:relative;">
+    <div class="m-header">
+      <div class="m-header-left">
+        <div class="m-logo">4N</div>
+        <span class="m-brand">405 Network</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button style="padding:4px 12px;border-radius:5px;border:1px solid var(--border);background:linear-gradient(135deg,var(--gold),#c9953a);color:#000;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="document.getElementById('chatOverlay').classList.toggle('active')">⚡ Parser</button>
+        <span class="m-title">Property Analyzer</span>
+      </div>
+      <button class="m-theme-btn">☀️</button>
+    </div>
+
+    <!-- Chat Overlay -->
+    <div class="m-chat-overlay" id="chatOverlay">
+      <div class="m-chat-overlay-panel">
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;">
+          <span>⚡ Listing Parser</span>
+          <button onclick="document.getElementById('chatOverlay').classList.remove('active')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;">✕</button>
+        </div>
+        <div class="m-chat-feed" style="flex:1;">
+          <div class="m-msg system">
+            <div class="m-msg-bubble">Paste a property listing — raw text or URL — and I'll extract the data.</div>
+          </div>
+          <div class="m-msg user">
+            <div class="m-msg-label">You</div>
+            <div class="m-msg-bubble" style="font-family:'JetBrains Mono',monospace;font-size:10px;white-space:pre-wrap;word-break:break-all;">https://www.crexi.com/properties/1234567/california-2345-olivewood-ave</div>
+          </div>
+          <div class="m-msg system">
+            <div class="m-pipeline">
+              <div class="m-pipeline-header">
+                <span class="check">✅</span>
+                <span>2345 Olivewood Ave — Analyzed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="m-chat-input">
+          <textarea rows="1" placeholder="Paste listing..."></textarea>
+          <button class="m-parse-btn">Parse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-Column Layout -->
+    <div class="m-content-landscape">
+      <div class="m-col-left">
+        <h2 style="font-size:14px;font-weight:600;color:var(--text);margin:0 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border);">Investment Parameters</h2>
+        <div class="m-type-toggle" style="margin-bottom:8px;">
+          <button class="active" style="font-size:12px;padding:5px 0;">🏢 Commercial</button>
+          <button style="font-size:12px;padding:5px 0;">🏠 Residential</button>
+        </div>
+        <div class="m-field" style="margin-bottom:6px;"><label style="font-size:11px;">Purchase Price</label><input type="text" value="$995,000" style="font-size:13px;padding:5px 8px;"></div>
+        <div class="m-field" style="margin-bottom:6px;"><label style="font-size:11px;">Annual Gross Rents</label><input type="text" value="$103,200" style="font-size:13px;padding:5px 8px;"></div>
+        <div class="m-field" style="margin-bottom:6px;"><label style="font-size:11px;">NOI (from listing)</label><input type="text" value="$62,500" style="font-size:13px;padding:5px 8px;"></div>
+        <div class="m-field" style="margin-bottom:6px;"><label style="font-size:11px;">Total Units</label><input type="text" value="6" style="font-size:13px;padding:5px 8px;"></div>
+        <div class="m-field" style="margin-bottom:6px;">
+          <label style="font-size:11px;">Down Payment (%)</label>
+          <input type="text" value="25" style="font-size:13px;padding:5px 8px;">
+          <div class="m-field-hint" style="font-size:10px;">Down: <strong>$248,750</strong> Loan: <strong>$746,250</strong></div>
+        </div>
+        <div class="m-field" style="margin-bottom:6px;"><label style="font-size:11px;">Interest Rate (%)</label><input type="text" value="7.25" style="font-size:13px;padding:5px 8px;"></div>
+        <div class="m-field" style="margin-bottom:6px;"><label style="font-size:11px;">Loan Term (years)</label><input type="text" value="30" style="font-size:13px;padding:5px 8px;"></div>
+
+        <div style="display:flex;gap:4px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+          <button class="m-footer-btn gold" style="font-size:10px;padding:4px 8px;">💾 Save</button>
+          <button class="m-footer-btn" style="font-size:10px;padding:4px 8px;">🔗 Share</button>
+          <button class="m-footer-btn" style="font-size:10px;padding:4px 8px;">📊 Portfolio</button>
+        </div>
+      </div>
+
+      <div class="m-col-right">
+        <div class="m-sec-header" style="margin-top:0;font-size:11px;">Deal Evaluation</div>
+        <div class="m-deal-eval" style="font-size:12px;padding:6px 8px;">✅ GOOD DEAL — Cap rate 6.28% exceeds 5% threshold</div>
+
+        <div class="m-sec-header" style="font-size:11px;">Investment Summary</div>
+        <div class="m-summary-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="m-summary-cell" style="padding:4px 6px;"><div class="m-summary-label" style="font-size:9px;">Cap Rate</div><div class="m-summary-val" style="font-size:12px;color:var(--up);">6.28%</div></div>
+          <div class="m-summary-cell" style="padding:4px 6px;"><div class="m-summary-label" style="font-size:9px;">Cash-on-Cash</div><div class="m-summary-val" style="font-size:12px;color:var(--up);">3.42%</div></div>
+          <div class="m-summary-cell" style="padding:4px 6px;"><div class="m-summary-label" style="font-size:9px;">Mo. Cash Flow</div><div class="m-summary-val" style="font-size:12px;color:var(--up);">$709</div></div>
+          <div class="m-summary-cell" style="padding:4px 6px;"><div class="m-summary-label" style="font-size:9px;">Annual CF</div><div class="m-summary-val" style="font-size:12px;color:var(--up);">$8,510</div></div>
+          <div class="m-summary-cell" style="padding:4px 6px;"><div class="m-summary-label" style="font-size:9px;">NOI</div><div class="m-summary-val" style="font-size:12px;">$62,500</div></div>
+          <div class="m-summary-cell" style="padding:4px 6px;"><div class="m-summary-label" style="font-size:9px;">DSCR</div><div class="m-summary-val" style="font-size:12px;">1.16</div></div>
+          <div class="m-summary-cell" style="padding:4px 6px;"><div class="m-summary-label" style="font-size:9px;">Price/Unit</div><div class="m-summary-val" style="font-size:12px;">$165,833</div></div>
+          <div class="m-summary-cell" style="padding:4px 6px;"><div class="m-summary-label" style="font-size:9px;">GRM</div><div class="m-summary-val" style="font-size:12px;">9.64</div></div>
+        </div>
+
+        <div class="m-sec-header" style="font-size:11px;">Income & Expenses</div>
+        <div class="m-tbl-container">
+          <table class="m-tbl" style="font-size:11px;">
+            <thead><tr><th style="font-size:9px;">Item</th><th style="font-size:9px;">Annual</th><th style="font-size:9px;">Monthly</th></tr></thead>
+            <tbody>
+              <tr><td>Gross Rents</td><td>$103,200</td><td>$8,600</td></tr>
+              <tr><td>Vacancy (5%)</td><td style="color:var(--down);">−$5,160</td><td style="color:var(--down);">−$430</td></tr>
+              <tr><td>Effective Gross</td><td>$98,040</td><td>$8,170</td></tr>
+              <tr class="row-total"><td>NOI</td><td>$62,500</td><td>$5,208</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="m-sec-header" style="font-size:11px;">Parsed Listing Data</div>
+        <div class="m-extracted">
+          <div class="m-extracted-header">
+            <span class="m-extracted-label">Extracted</span>
+            <span class="m-extracted-addr" style="font-size:11px;">2345 Olivewood Ave, Long Beach, CA 90815</span>
+          </div>
+          <div class="m-extracted-grid" style="grid-template-columns:repeat(4,1fr);">
+            <div class="m-extracted-cell"><div class="ek">Price</div><div class="ev" style="font-size:11px;">$995,000</div></div>
+            <div class="m-extracted-cell"><div class="ek">Units</div><div class="ev" style="font-size:11px;">6</div></div>
+            <div class="m-extracted-cell"><div class="ek">Cap Rate</div><div class="ev" style="font-size:11px;">6.28%</div></div>
+            <div class="m-extracted-cell"><div class="ek">NOI</div><div class="ev" style="font-size:11px;">$62,500</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchView(mode) {
+  document.getElementById('portraitFrame').style.display = mode === 'portrait' ? '' : 'none';
+  document.getElementById('landscapeFrame').style.display = mode === 'landscape' ? '' : 'none';
+  document.getElementById('btnPortrait').className = mode === 'portrait' ? 'active' : '';
+  document.getElementById('btnLandscape').className = mode === 'landscape' ? 'active' : '';
+}
+
+function switchTab(panelId, btn) {
+  var panels = ['pChat', 'pCalc', 'pResults'];
+  for (var i = 0; i < panels.length; i++) {
+    var el = document.getElementById(panels[i]);
+    el.classList.remove('active');
+  }
+  document.getElementById(panelId).classList.add('active');
+  var tabs = btn.parentElement.querySelectorAll('button');
+  for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
+  btn.classList.add('active');
+}
+
+document.getElementById('pChat').classList.add('active');
+</script>
 
 </body>
 </html>

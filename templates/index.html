@@ -63,10 +63,10 @@
                 hx-on::after-request="this.querySelector('span').textContent=event.detail.xhr.status===200?'✅ Saved':'❌ Error'">
           💾 <span>Save to Portfolio</span>
         </button>
-        <button class="footer-btn" onclick="navigator.clipboard.writeText(window.location.href);this.querySelector('span').textContent='✅ Copied!'">
+        <button class="footer-btn" onclick="navigator.clipboard.writeText(window.location.href);this.querySelector('span').textContent='✅ Link Copied!'">
           🔗 <span>Share Link</span>
         </button>
-        <button class="footer-btn" hx-get="/tab/portfolio" hx-target="#results" hx-swap="innerHTML">
+        <button class="footer-btn" onclick="showPortfolio()">
           📊 <span>Portfolio</span>
         </button>
         <span class="footer-status" id="saveStatus">not saved</span>

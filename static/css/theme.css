@@ -270,6 +270,7 @@ body {
 .msg-bubble {
   padding: 10px 14px; border-radius: 14px;
   font-size: 13.5px; line-height: 1.65;
+  word-break: break-all; overflow-wrap: break-word;
 }
 .msg.user .msg-bubble {
   background: var(--bg-input); border: 1px solid var(--border);
