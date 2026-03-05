@@ -9,7 +9,7 @@ Money values are quantized to 2 decimal places.
 
 from __future__ import annotations
 
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import ROUND_HALF_EVEN, ROUND_HALF_UP, Decimal
 
 from backend.data.states import get_state_rates
 from backend.schemas.calculator import CalculationResult, CalculatorInput, OccupancyScenario
@@ -114,6 +114,17 @@ def calculate_commercial(inp: CalculatorInput) -> CalculationResult:
         closing_costs=closing_costs,
         total_cash_down=total_cash_down,
         loan_amount=loan_amount,
+        monthly_insurance=(annual_insurance / _TWELVE).quantize(_Q2, rounding=ROUND_HALF_UP),
+        monthly_tax=(annual_tax / _TWELVE).quantize(_Q2, rounding=ROUND_HALF_UP),
+        monthly_pm=(annual_pm / _TWELVE).quantize(_Q2, rounding=ROUND_HALF_UP),
+        monthly_other=(other_exp / _TWELVE).quantize(_Q2, rounding=ROUND_HALF_UP) if other_exp else Decimal("0"),
+        annual_insurance=annual_insurance,
+        annual_tax=annual_tax,
+        annual_pm=annual_pm,
+        annual_other=other_exp,
+        total_opex=total_opex,
+        insurance_rate_pct=(insurance_rate * _HUNDRED).quantize(Decimal("0.1"), rounding=ROUND_HALF_EVEN),
+        tax_rate_pct=(tax_rate * _HUNDRED).quantize(Decimal("0.1"), rounding=ROUND_HALF_EVEN),
     )
 
 
@@ -195,6 +206,11 @@ def calculate_residential(inp: CalculatorInput) -> CalculationResult:
     worst_cf = scenarios[0].monthly_cash_flow
     inv_status = "Good Investment" if worst_cf >= 0 else "High Risk"
 
+    # Annual expense breakdowns for residential
+    annual_insurance_val = (monthly_insurance * _TWELVE).quantize(_Q2, rounding=ROUND_HALF_UP)
+    annual_tax_val = (monthly_tax * _TWELVE).quantize(_Q2, rounding=ROUND_HALF_UP)
+    annual_pm_val = (monthly_pm * _TWELVE).quantize(_Q2, rounding=ROUND_HALF_UP)
+
     return CalculationResult(
         noi_estimated=noi_estimated,
         noi_listing=Decimal("0"),
@@ -218,6 +234,12 @@ def calculate_residential(inp: CalculatorInput) -> CalculationResult:
         monthly_tax=monthly_tax,
         monthly_pm=monthly_pm,
         monthly_maintenance=monthly_maint,
+        annual_insurance=annual_insurance_val,
+        annual_tax=annual_tax_val,
+        annual_pm=annual_pm_val,
+        total_opex=annual_opex,
+        insurance_rate_pct=(_RESIDENTIAL_INSURANCE_RATE * _HUNDRED).quantize(Decimal("0.1"), rounding=ROUND_HALF_EVEN),
+        tax_rate_pct=(tax_rate * _HUNDRED).quantize(Decimal("0.1"), rounding=ROUND_HALF_EVEN),
     )
 
 

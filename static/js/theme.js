@@ -3,6 +3,16 @@
   const saved = localStorage.getItem('theme') || 'dark';
   html.setAttribute('data-theme', saved);
 
+  /* State rate data (matches backend/data/states.py and Streamlit app.py) */
+  var STATE_RATES = {
+    AZ: { tax: 0.62, insurance_comm: 0.5, insurance_resi: 1.0 },
+    CA: { tax: 1.2, insurance_comm: 1.2, insurance_resi: 1.0 },
+    IN: { tax: 1.4, insurance_comm: 0.5, insurance_resi: 1.0 },
+    NV: { tax: 0.6, insurance_comm: 0.5, insurance_resi: 1.0 },
+    TX: { tax: 1.7, insurance_comm: 0.5, insurance_resi: 1.0 },
+    MI: { tax: 3.2, insurance_comm: 0.5, insurance_resi: 1.0 }
+  };
+
   /* Theme toggle with icon */
   window.toggleTheme = function() {
     const current = html.getAttribute('data-theme');
@@ -18,6 +28,7 @@
     const btn = document.getElementById('themeBtn');
     if (btn) btn.textContent = html.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
     initCurrencyFormatting();
+    updateRateDisplay();
   });
 
   /* Chat panel toggle */
@@ -28,6 +39,41 @@
     panel.classList.toggle('open');
     btn.classList.toggle('active');
   };
+
+  /* Update rate display boxes based on selected state */
+  function updateRateDisplay() {
+    var stateSelect = document.querySelector('select[name="state"]');
+    if (!stateSelect) return;
+    var st = stateSelect.value || 'CA';
+    var rates = STATE_RATES[st];
+    if (!rates) return;
+
+    var taxEl = document.getElementById('taxRateDisplay');
+    var insEl = document.getElementById('insuranceRateDisplay');
+    if (!taxEl || !insEl) return;
+
+    taxEl.textContent = rates.tax.toFixed(1) + '%';
+    // Determine property type from hidden input
+    var typeInput = document.querySelector('input[name="property_type"]');
+    var isCommercial = typeInput && typeInput.value === 'Commercial';
+    var insRate = isCommercial ? rates.insurance_comm : rates.insurance_resi;
+    insEl.textContent = insRate.toFixed(1) + '%';
+  }
+
+  /* Listen for state changes */
+  document.addEventListener('change', function(e) {
+    if (e.target && e.target.name === 'state') {
+      updateRateDisplay();
+    }
+  });
+
+  /* Re-init after HTMX sidebar swaps */
+  document.body.addEventListener('htmx:afterSwap', function(e) {
+    if (e.detail.target && e.detail.target.id === 'sidebar-form') {
+      initCurrencyFormatting();
+      updateRateDisplay();
+    }
+  });
 
   /* Currency formatting for numeric inputs */
   function formatCurrency(val) {
@@ -60,13 +106,6 @@
       });
     });
   }
-
-  /* Re-init currency formatting after HTMX swaps sidebar */
-  document.body.addEventListener('htmx:afterSwap', function(e) {
-    if (e.detail.target && e.detail.target.id === 'sidebar-form') {
-      initCurrencyFormatting();
-    }
-  });
 
   /* Strip currency formatting before HTMX sends form data */
   document.body.addEventListener('htmx:configRequest', function(e) {

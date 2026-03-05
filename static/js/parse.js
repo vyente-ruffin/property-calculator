@@ -147,6 +147,10 @@ function showExtractedData(data, feed) {
   for (var i = 0; i < fields.length; i++) {
     var f = fields[i];
     var val = data[f] || "--";
+    // Strip .00 cents from currency values
+    if (typeof val === "string") {
+      val = val.replace(/\.00\b/g, "");
+    }
     var label = f.replace(/\(.*\)/, "").trim();
     grid +=
       '<span class="extract-key">' +

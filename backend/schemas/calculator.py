@@ -61,10 +61,22 @@ class CalculationResult(BaseModel):
     total_cash_down: Decimal
     loan_amount: Decimal
 
-    # Residential-specific
-    occupancy_scenarios: list[OccupancyScenario] | None = None
-    investment_status: str | None = None
+    # Expense breakdowns (populated for both property types)
     monthly_insurance: Decimal | None = None
     monthly_tax: Decimal | None = None
     monthly_pm: Decimal | None = None
     monthly_maintenance: Decimal | None = None
+    monthly_other: Decimal | None = None
+    annual_insurance: Decimal | None = None
+    annual_tax: Decimal | None = None
+    annual_pm: Decimal | None = None
+    annual_other: Decimal | None = None
+    total_opex: Decimal | None = None  # operating expenses excl. debt service
+
+    # Display rates (for template rendering)
+    insurance_rate_pct: Decimal | None = None
+    tax_rate_pct: Decimal | None = None
+
+    # Residential-specific
+    occupancy_scenarios: list[OccupancyScenario] | None = None
+    investment_status: str | None = None

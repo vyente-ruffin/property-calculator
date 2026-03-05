@@ -392,6 +392,10 @@ body {
 .tables-row {
   display: flex; flex-direction: column; gap: 4px;
 }
+.tables-side-by-side {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.tables-side-by-side > div { min-width: 0; }
 .tbl-container {
   border-radius: 6px; border: 1px solid var(--tbl-border);
   overflow-x: auto; margin-bottom: 4px;
@@ -417,6 +421,9 @@ body {
   font-weight: 700; border-top: 2px solid var(--tbl-border);
   background: var(--tbl-head);
 }
+/* Compact table variant */
+.tbl-compact th { padding: 5px 10px; font-size: 12px; }
+.tbl-compact td { padding: 5px 10px; font-size: 13px; }
 
 /* Total annual expenses line */
 .total-line {
@@ -542,6 +549,7 @@ body {
   .main { flex: 1; }
   .header-center { display: none; }
   .summary-grid { grid-template-columns: 1fr; }
+  .tables-side-by-side { grid-template-columns: 1fr; }
 }
 
 @media (min-width: 769px) and (max-width: 1023px) {

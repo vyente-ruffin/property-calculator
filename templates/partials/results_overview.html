@@ -17,14 +17,22 @@
 
 {% set _t = {'green': 'text-up', 'yellow': 'text-caution', 'red': 'text-down'} %}
 
+{# ── Deal Evaluation Banner (shown first) ────────────── #}
+<div class="sec-header" style="margin-top:0;">Deal Evaluation</div>
+{% if r.annual_cash_flow|float >= 0 %}
+<div class="deal-eval good">✅ GOOD DEAL: Positive annual cash flow of ${{ "{:,.0f}".format(r.annual_cash_flow|float) }}</div>
+{% else %}
+<div class="deal-eval bad">❌ BAD DEAL: Negative annual cash flow of ${{ "{:,.0f}".format(r.annual_cash_flow|float) }}</div>
+{% endif %}
+
 {# ── Residential: Monthly Expenses & Occupancy Scenarios ─── #}
 {% if inp and inp.property_type == 'Residential' %}
 
-<div class="tables-row">
+<div class="tables-row tables-side-by-side">
   <div>
-    <div class="sec-header" style="margin-top:0;">Monthly Expenses</div>
+    <div class="sec-header">Monthly Expenses</div>
     <div class="tbl-container">
-      <table class="tbl">
+      <table class="tbl tbl-compact">
         <thead>
           <tr><th>Expense</th><th>Monthly</th></tr>
         </thead>
@@ -45,9 +53,9 @@
 
   {% if r.occupancy_scenarios %}
   <div>
-    <div class="sec-header" style="margin-top:0;">Occupancy Scenarios</div>
+    <div class="sec-header">Occupancy Scenarios</div>
     <div class="tbl-container">
-      <table class="tbl">
+      <table class="tbl tbl-compact">
         <thead>
           <tr><th>Occupancy</th><th>Cash Flow</th><th>ROI</th></tr>
         </thead>
@@ -72,31 +80,26 @@
 
 {% endif %}
 
-{# ── Commercial: Operating Expenses with Monthly + Annual ── #}
+{# ── Commercial: Operating Expenses + Investment Analysis side-by-side ── #}
 {% if inp and inp.property_type == 'Commercial' %}
-{% set monthly_insurance = (params.get('purchase_price', '1970000')|float * 0.0125 / 12) %}
-{% set annual_insurance = (params.get('purchase_price', '1970000')|float * 0.0125) %}
-{% set monthly_tax = (params.get('purchase_price', '1970000')|float * 0.0125 / 12) %}
-{% set annual_tax = (params.get('purchase_price', '1970000')|float * 0.0125) %}
-{% set monthly_pm = (params.get('annual_gross_rents', '152195')|float * 0.04 / 12) %}
-{% set annual_pm = (params.get('annual_gross_rents', '152195')|float * 0.04) %}
-{% set monthly_other = (params.get('other_expenses', '5000')|float / 12) %}
-{% set annual_other = params.get('other_expenses', '5000')|float %}
-{% set total_monthly_opex = (r.monthly_payment|float + monthly_insurance + monthly_tax + monthly_pm + monthly_other) %}
-{% set total_annual_opex = (r.annual_debt_service|float + annual_insurance + annual_tax + annual_pm + annual_other) %}
 
-<div class="tables-row">
+{% set gross = params.get('annual_gross_rents', 0)|float %}
+{% set vac = params.get('vacancy_rate', 0)|float / 100 %}
+{% set total_monthly_opex = (r.monthly_payment|float + r.monthly_insurance|float + r.monthly_tax|float + r.monthly_pm|float + r.monthly_other|float) %}
+{% set total_annual_opex = (r.annual_debt_service|float + r.annual_insurance|float + r.annual_tax|float + r.annual_pm|float + r.annual_other|float) %}
+
+<div class="tables-row tables-side-by-side">
   <div>
-    <div class="sec-header" style="margin-top:0;">Operating Expenses</div>
+    <div class="sec-header">Operating Expenses</div>
     <div class="tbl-container">
-      <table class="tbl">
+      <table class="tbl tbl-compact">
         <thead><tr><th>Expense</th><th>Monthly</th><th>Annual</th></tr></thead>
         <tbody>
           <tr><td>P&amp;I (Mortgage)</td><td>${{ "{:,.0f}".format(r.monthly_payment|float) }}</td><td>${{ "{:,.0f}".format(r.annual_debt_service|float) }}</td></tr>
-          <tr><td>Insurance</td><td>${{ "{:,.0f}".format(monthly_insurance) }}</td><td>${{ "{:,.0f}".format(annual_insurance) }}</td></tr>
-          <tr><td>Property Tax</td><td>${{ "{:,.0f}".format(monthly_tax) }}</td><td>${{ "{:,.0f}".format(annual_tax) }}</td></tr>
-          <tr><td>Property Mgmt (4%)</td><td>${{ "{:,.0f}".format(monthly_pm) }}</td><td>${{ "{:,.0f}".format(annual_pm) }}</td></tr>
-          <tr><td>Other Expenses</td><td>${{ "{:,.0f}".format(monthly_other) }}</td><td>${{ "{:,.0f}".format(annual_other) }}</td></tr>
+          <tr><td>Insurance</td><td>${{ "{:,.0f}".format(r.monthly_insurance|float) }}</td><td>${{ "{:,.0f}".format(r.annual_insurance|float) }}</td></tr>
+          <tr><td>Property Tax</td><td>${{ "{:,.0f}".format(r.monthly_tax|float) }}</td><td>${{ "{:,.0f}".format(r.annual_tax|float) }}</td></tr>
+          <tr><td>Property Mgmt (4%)</td><td>${{ "{:,.0f}".format(r.monthly_pm|float) }}</td><td>${{ "{:,.0f}".format(r.annual_pm|float) }}</td></tr>
+          <tr><td>Other Expenses</td><td>${{ "{:,.0f}".format(r.monthly_other|float) }}</td><td>${{ "{:,.0f}".format(r.annual_other|float) }}</td></tr>
           <tr class="row-total"><td>Total</td><td>${{ "{:,.0f}".format(total_monthly_opex) }}</td><td>${{ "{:,.0f}".format(total_annual_opex) }}</td></tr>
         </tbody>
       </table>
@@ -107,23 +110,53 @@
       <span class="arrow">▾</span>
     </div>
     <div class="collapse-body">
-      <strong>Insurance</strong> — {{ params.get('state', 'CA') }} state rate (1.25%) applied to purchase price<br>
-      <strong>Taxes</strong> — {{ params.get('state', 'CA') }} state rate (1.25%) applied to purchase price<br>
+      <strong>Insurance</strong> — {{ params.get('state', 'CA') }} state rate ({{ r.insurance_rate_pct }}%) applied to purchase price<br>
+      <strong>Taxes</strong> — {{ params.get('state', 'CA') }} state rate ({{ r.tax_rate_pct }}%) applied to purchase price<br>
       <strong>PM Fee</strong> — 4% of annual gross rents (commercial standard)<br>
       <strong>P&amp;I</strong> — {{ params.get('loan_years', 25) }}-year term at {{ params.get('interest_rate', '6.5') }}% on ${{ "{:,.0f}".format(r.loan_amount|float) }} loan
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-header">Investment Analysis</div>
+    <div class="tbl-container">
+      <table class="tbl tbl-compact">
+        <thead>
+          <tr><th>Metric</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Annual Gross Rents</td><td>${{ "{:,.0f}".format(gross) }}</td></tr>
+          <tr><td>Adjusted Gross Income</td><td>${{ "{:,.0f}".format(gross * (1 - vac)) }}</td></tr>
+          <tr>
+            <td>Annual NOI (Estimated)</td>
+            <td class="{{ 'text-up' if r.noi_estimated|float >= 0 else 'text-down' }} fw-700">${{ "{:,.0f}".format(r.noi_estimated|float) }}</td>
+          </tr>
+          <tr><td>Annual Debt Service</td><td>${{ "{:,.0f}".format(r.annual_debt_service|float) }}</td></tr>
+          <tr>
+            <td>Annual Cash Flow</td>
+            <td class="{{ 'text-up' if r.annual_cash_flow|float >= 0 else 'text-down' }} fw-700">${{ "{:,.0f}".format(r.annual_cash_flow|float) }}</td>
+          </tr>
+          <tr>
+            <td>Cash-on-Cash Return</td>
+            <td class="{{ _t[v.scores.coc] }} fw-700">{{ r.cash_on_cash|round(1) }}%</td>
+          </tr>
+          <tr><td>Total Cash Down</td><td>${{ "{:,.0f}".format(r.total_cash_down|float) }}</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
 {% endif %}
 
-{# ── Investment Analysis Table ────────────────────────── #}
-{% set gross = params.get('annual_gross_rents', 0)|float if (inp and inp.property_type == 'Commercial') else (params.get('monthly_rent', 0)|float * 12) %}
+{# ── Residential Investment Analysis ─────────────────── #}
+{% if inp and inp.property_type == 'Residential' %}
+{% set gross = params.get('monthly_rent', 0)|float * 12 %}
 {% set vac = params.get('vacancy_rate', 0)|float / 100 %}
 
 <div class="sec-header">Investment Analysis</div>
 <div class="tbl-container">
-  <table class="tbl">
+  <table class="tbl tbl-compact">
     <thead>
       <tr><th>Metric</th><th>Amount</th></tr>
     </thead>
@@ -147,13 +180,6 @@
     </tbody>
   </table>
 </div>
-
-{# ── Deal Evaluation Banner ──────────────────────────── #}
-<div class="sec-header">Deal Evaluation</div>
-{% if r.annual_cash_flow|float >= 0 %}
-<div class="deal-eval good">✅ GOOD DEAL: Positive annual cash flow of ${{ "{:,.0f}".format(r.annual_cash_flow|float) }}</div>
-{% else %}
-<div class="deal-eval bad">❌ BAD DEAL: Negative annual cash flow of ${{ "{:,.0f}".format(r.annual_cash_flow|float) }}</div>
 {% endif %}
 
 {# ── Investment Summary Grid ─────────────────────────── #}
