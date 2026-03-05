@@ -23,15 +23,15 @@
       </div>
       <div class="chat-body" id="chatFeed">
         <div class="msg system">
-          <div class="msg-bubble">Paste a property listing — raw text or URL — and I'll extract the data and run the investment analysis.</div>
+          <div class="msg-bubble">Paste a property listing URL and I'll pull the details and run the investment analysis for you.</div>
         </div>
       </div>
       <div class="chat-footer">
-        <textarea id="listingInput" rows="2" placeholder="Paste listing text or URL..."
+        <textarea id="listingInput" rows="2" placeholder="Paste a property listing URL..."
                   onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();parseListing();}"></textarea>
         <div class="chat-compose-actions">
           <button class="btn-ghost" onclick="document.getElementById('listingInput').value=''">Clear</button>
-          <button class="btn-parse" id="parseBtn" onclick="parseListing()">Parse</button>
+          <button class="btn-parse" id="parseBtn" onclick="parseListing()">Analyze Property</button>
         </div>
       </div>
     </div>

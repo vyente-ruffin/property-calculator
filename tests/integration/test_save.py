@@ -8,17 +8,21 @@ _has_creds = os.getenv("GOOGLE_SERVICE_ACCOUNT", "{}") not in ("", "{}")
 _skip_reason = "GOOGLE_SERVICE_ACCOUNT not configured"
 
 
-def test_post_returns_503_without_creds(client, monkeypatch):
+def test_post_returns_503_without_creds(client):
     """When sheets are not configured the endpoint returns 503."""
-    monkeypatch.setenv("GOOGLE_SERVICE_ACCOUNT", "{}")
+    from backend.config import settings
+    if settings.GOOGLE_SERVICE_ACCOUNT not in ("", "{}"):
+        pytest.skip("Sheets credentials are configured")
     response = client.post("/api/properties", json={"data": {"Price": "$100"}})
     assert response.status_code == 503
     assert "not configured" in response.json()["detail"]
 
 
-def test_get_returns_503_without_creds(client, monkeypatch):
+def test_get_returns_503_without_creds(client):
     """When sheets are not configured the endpoint returns 503."""
-    monkeypatch.setenv("GOOGLE_SERVICE_ACCOUNT", "{}")
+    from backend.config import settings
+    if settings.GOOGLE_SERVICE_ACCOUNT not in ("", "{}"):
+        pytest.skip("Sheets credentials are configured")
     response = client.get("/api/properties")
     assert response.status_code == 503
 

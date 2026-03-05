@@ -13,8 +13,21 @@ async function parseListing() {
 
   // Disable button and show loading state
   parseBtn.disabled = true;
-  parseBtn.textContent = "Parsing...";
+  parseBtn.textContent = "Analyzing...";
   parseBtn.classList.add("parsing");
+
+  // Show loading overlay in results area
+  var resultsContainer = document.getElementById("results");
+  var extractedContainer = document.getElementById("extracted-data");
+  if (resultsContainer) {
+    resultsContainer.innerHTML =
+      '<div class="analyzing-overlay">' +
+      '<div class="analyzing-spinner"></div>' +
+      '<div class="analyzing-text">Analyzing Property</div>' +
+      '<div class="analyzing-sub">Scraping listing data and running investment analysis...</div>' +
+      '</div>';
+  }
+  if (extractedContainer) extractedContainer.innerHTML = '';
 
   // Clear input for next property
   input.value = "";
@@ -134,7 +147,7 @@ async function parseListing() {
 
   // Reset button
   parseBtn.disabled = false;
-  parseBtn.textContent = "Parse";
+  parseBtn.textContent = "Analyze Property";
   parseBtn.classList.remove("parsing");
 
   feed.scrollTop = feed.scrollHeight;

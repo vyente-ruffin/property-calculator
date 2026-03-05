@@ -252,6 +252,27 @@ body {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
+
+/* Analyzing overlay — shown in results area during property analysis */
+.analyzing-overlay {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; text-align: center;
+}
+.analyzing-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.analyzing-text {
+  font-size: 18px; font-weight: 600; color: var(--text);
+  margin-bottom: 6px;
+}
+.analyzing-sub {
+  font-size: 13px; color: var(--text-muted);
+}
 .btn-ghost {
   background: transparent; color: var(--text-dim);
   border: none; padding: 7px 12px; border-radius: 7px;
