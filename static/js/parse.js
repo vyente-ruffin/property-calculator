@@ -299,6 +299,7 @@ function populateCalculator(data) {
   if (stMatch) mapping["state"] = stMatch[1];
 
   var keys = Object.keys(mapping);
+  var populated = {};
   for (var i = 0; i < keys.length; i++) {
     var name = keys[i];
     var val = mapping[name];
@@ -307,8 +308,16 @@ function populateCalculator(data) {
     if (el) {
       el.value = val;
       el.dataset.raw = val;
+      populated[name] = val;
     }
   }
+
+  // Log which fields were populated
+  fetch('/api/log', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({event: 'form_populated', data: populated})
+  }).catch(function() {});
 
   // Trigger HTMX recalculation
   var form = document.getElementById("calc-form");
@@ -348,10 +357,22 @@ function saveToGoogleSheet() {
     var status = document.getElementById("saveStatus");
     if (status) status.textContent = "✅ Saved to Google Sheet";
     if (btn) btn.querySelector("span").textContent = "✅ Saved";
+    // Log Google Sheets save
+    fetch('/api/log', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({event: 'google_sheet_saved', data: {row: d.row, purchase_price: data.purchase_price, state: data.state}})
+    }).catch(function() {});
   }).catch(function(e) {
     var status = document.getElementById("saveStatus");
     if (status) status.textContent = "❌ " + e.message;
     if (btn) btn.querySelector("span").textContent = "Save to Google Sheet";
+    // Log Google Sheets error
+    fetch('/api/log', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({event: 'google_sheet_error', data: {error: e.message}})
+    }).catch(function() {});
   });
 }
 
