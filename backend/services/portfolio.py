@@ -1,5 +1,6 @@
 """Portfolio persistence — SQLite storage for parsed/analyzed properties."""
 
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -26,15 +27,7 @@ CREATE TABLE IF NOT EXISTS properties (
     unit_mix TEXT,
     date_on_market TEXT,
     property_url TEXT,
-    purchase_price INTEGER,
-    down_payment_pct INTEGER,
-    interest_rate REAL,
-    loan_years INTEGER,
-    vacancy_rate REAL,
-    other_expenses INTEGER,
-    annual_cash_flow INTEGER,
-    cash_on_cash REAL,
-    verdict TEXT,
+    description TEXT,
     parsed_at TEXT DEFAULT (strftime('%m/%d/%Y %I:%M %p', 'now', '-8 hours'))
 );
 """
@@ -58,17 +51,31 @@ def _parse_int(val) -> int | None:
         return None
 
 
+def _normalize_address(addr: str) -> str:
+    if not addr:
+        return ""
+    return re.sub(r'\s+', ' ', re.sub(r'[^a-z0-9 ]', '', addr.lower())).strip()
+
+
 def save_property(data: dict) -> int:
     conn = _get_conn()
     try:
+        address = data.get("Address") or data.get("address") or ""
+        city = data.get("City") or data.get("city") or ""
+        state = data.get("state", "")
+        if not state and city:
+            m = re.search(r',\s*([A-Z]{2})\s', city)
+            if m:
+                state = m.group(1)
+
         row = {
-            "address": data.get("Address") or data.get("address"),
-            "city": data.get("City") or data.get("city"),
-            "state": data.get("state", "CA"),
-            "price": _parse_int(data.get("Price") or data.get("price")),
+            "address": address,
+            "city": city,
+            "state": state or "CA",
+            "price": _parse_int(data.get("Price") or data.get("price") or data.get("purchase_price")),
             "total_units": _parse_int(data.get("Total Units") or data.get("total_units")),
             "cap_rate": data.get("Cap Rate") or data.get("cap_rate"),
-            "noi": _parse_int(data.get("NOI") or data.get("noi")),
+            "noi": _parse_int(data.get("NOI") or data.get("noi") or data.get("annual_noi_listing")),
             "annual_rent": _parse_int(
                 data.get("Annual Rent Income (Actual)")
                 or data.get("Annual Rent Income (Projected)")
@@ -83,32 +90,24 @@ def save_property(data: dict) -> int:
             "unit_mix": data.get("Unit Mix Summary") or data.get("unit_mix"),
             "date_on_market": data.get("Date On Market") or data.get("date_on_market"),
             "property_url": data.get("Link") or data.get("property_url"),
-            "purchase_price": _parse_int(data.get("purchase_price") or data.get("Price")),
-            "down_payment_pct": _parse_int(data.get("down_payment_pct", 30)),
-            "interest_rate": float(data.get("interest_rate", 6.5) or 6.5),
-            "loan_years": _parse_int(data.get("loan_years", 25)),
-            "vacancy_rate": float(data.get("vacancy_rate", 3) or 3),
-            "other_expenses": _parse_int(data.get("other_expenses", 5000)),
-            "annual_cash_flow": _parse_int(data.get("annual_cash_flow")),
-            "cash_on_cash": float(data.get("cash_on_cash", 0) or 0),
-            "verdict": data.get("verdict"),
+            "description": data.get("Description") or data.get("description"),
         }
 
-        # Deduplicate by address — update if exists, insert if new
-        if row["address"]:
-            existing = conn.execute(
-                "SELECT id FROM properties WHERE address = ?", (row["address"],)
-            ).fetchone()
-            if existing:
-                pid = existing["id"]
-                sets = ", ".join(f"{k} = ?" for k in row.keys())
-                conn.execute(
-                    f"UPDATE properties SET {sets}, parsed_at = strftime('%m/%d/%Y %I:%M %p', 'now', '-8 hours') WHERE id = ?",
-                    list(row.values()) + [pid],
-                )
-                conn.commit()
-                log.info("property_updated", id=pid, address=row["address"], price=row["price"])
-                return pid
+        # Deduplicate by normalized address
+        norm = _normalize_address(address)
+        if norm:
+            existing = conn.execute("SELECT id, address FROM properties").fetchall()
+            for ex in existing:
+                if _normalize_address(ex["address"]) == norm:
+                    pid = ex["id"]
+                    sets = ", ".join(f"{k} = ?" for k in row.keys())
+                    conn.execute(
+                        f"UPDATE properties SET {sets}, parsed_at = strftime('%m/%d/%Y %I:%M %p', 'now', '-8 hours') WHERE id = ?",
+                        list(row.values()) + [pid],
+                    )
+                    conn.commit()
+                    log.info("property_updated", id=pid, address=address, price=row["price"])
+                    return pid
 
         cols = ", ".join(row.keys())
         placeholders = ", ".join(["?"] * len(row))
@@ -118,7 +117,7 @@ def save_property(data: dict) -> int:
         )
         conn.commit()
         pid = cur.lastrowid
-        log.info("property_saved", id=pid, address=row["address"], price=row["price"])
+        log.info("property_saved", id=pid, address=address, price=row["price"])
         return pid
     finally:
         conn.close()
