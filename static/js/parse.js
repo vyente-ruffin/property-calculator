@@ -3,6 +3,8 @@
  * Ported from frontend/js/chat.js SSE pattern.
  */
 
+var lastParsedResult = null;
+
 async function parseListing() {
   var input = document.getElementById("listingInput");
   var text = input.value.trim();
@@ -125,6 +127,7 @@ async function parseListing() {
 
     // Show extracted data in results panel and populate calculator
     if (finalResult) {
+      lastParsedResult = finalResult;
       showExtractedData(finalResult);
       populateCalculator(finalResult);
 
@@ -332,42 +335,38 @@ function parseCurrency(str) {
 }
 
 function saveToGoogleSheet() {
-  var form = document.getElementById("calc-form");
-  if (!form) return;
-  var formData = new FormData(form);
-  var data = {};
-  formData.forEach(function(val, key) { data[key] = val; });
-
-  // Strip currency formatting
-  ["purchase_price", "annual_gross_rents", "annual_noi_listing", "other_expenses", "monthly_rent"].forEach(function(f) {
-    if (data[f]) data[f] = data[f].replace(/[^0-9.]/g, "");
-  });
+  if (!lastParsedResult) {
+    var status = document.getElementById("saveStatus");
+    if (status) status.textContent = "❌ No property analyzed yet";
+    return;
+  }
 
   var btn = document.getElementById("saveBtn");
   if (btn) btn.querySelector("span").textContent = "Saving...";
 
-  fetch("/api/properties", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({data: data})
+  // POST raw 15-field parser data to n8n webhook
+  fetch("/api/webhook-url").then(function(r) { return r.json(); }).then(function(cfg) {
+    return fetch(cfg.url, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(lastParsedResult)
+    });
   }).then(function(r) {
-    if (!r.ok) throw new Error(r.status === 503 ? "Google Sheets not configured" : "Save failed");
-    return r.json();
+    if (!r.ok) throw new Error("Webhook returned " + r.status);
+    return r.json().catch(function() { return {}; });
   }).then(function(d) {
     var status = document.getElementById("saveStatus");
     if (status) status.textContent = "✅ Saved to Google Sheet";
     if (btn) btn.querySelector("span").textContent = "✅ Saved";
-    // Log Google Sheets save
     fetch('/api/log', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({event: 'google_sheet_saved', data: {row: d.row, purchase_price: data.purchase_price, state: data.state}})
+      body: JSON.stringify({event: 'google_sheet_saved_via_n8n', data: {address: lastParsedResult.Address, price: lastParsedResult.Price}})
     }).catch(function() {});
   }).catch(function(e) {
     var status = document.getElementById("saveStatus");
     if (status) status.textContent = "❌ " + e.message;
     if (btn) btn.querySelector("span").textContent = "Save to Google Sheet";
-    // Log Google Sheets error
     fetch('/api/log', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
