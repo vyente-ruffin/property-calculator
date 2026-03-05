@@ -101,16 +101,18 @@ async function parseListing() {
       }
     }
 
-    // Update pipeline header
+    // Update pipeline header with address
     var pipeline = document.getElementById(pipelineId);
     pipeline.querySelector(".check").textContent = "✅";
+    var addr = finalResult && finalResult["Address"] ? finalResult["Address"] : "";
+    var statusText = addr ? addr + " — Analyzed" : "Analyzed — 7/7 steps";
     pipeline.querySelector(
       ".pipeline-toggle span:nth-child(2)"
-    ).textContent = "Analyzed — 7/7 steps";
+    ).textContent = statusText;
 
-    // Show extracted data and populate calculator
+    // Show extracted data in results panel and populate calculator
     if (finalResult) {
-      showExtractedData(finalResult, feed);
+      showExtractedData(finalResult);
       populateCalculator(finalResult);
     }
   } catch (e) {
@@ -145,42 +147,50 @@ function updateStep(name, status, data) {
   }
 }
 
-function showExtractedData(data, feed) {
+function showExtractedData(data) {
+  var container = document.getElementById("extracted-data");
+  if (!container) return;
+
+  var address = data["Address"] || "";
+  var city = data["City"] || "";
+  var displayAddr = address + (city ? ", " + city : "");
+
   var fields = [
-    "Price",
-    "Address",
-    "City",
-    "Total Units",
-    "Cap Rate",
-    "NOI",
-    "Annual Rent Income (Projected)",
-    "Monthly Rental Income (Projected)",
-    "Unit Mix Summary",
+    ["Price", "Price"],
+    ["Total Units", "Total Units"],
+    ["Cap Rate", "Cap Rate"],
+    ["NOI", "NOI"],
+    ["Annual Rent Income (Projected)", "Annual Rent"],
+    ["Monthly Rental Income (Projected)", "Monthly Rent"],
+    ["Unit Mix Summary", "Unit Mix"],
   ];
-  var grid = "";
+
+  var cells = "";
   for (var i = 0; i < fields.length; i++) {
-    var f = fields[i];
-    var val = data[f] || "--";
-    // Strip .00 cents from currency values
+    var key = fields[i][0];
+    var label = fields[i][1];
+    var val = data[key] || "--";
     if (typeof val === "string") {
       val = val.replace(/\.00\b/g, "");
     }
-    var label = f.replace(/\(.*\)/, "").trim();
-    grid +=
-      '<span class="extract-key">' +
+    cells +=
+      '<div class="extracted-cell"><div class="ek">' +
       label +
-      '</span><span class="extract-val">' +
+      '</div><div class="ev">' +
       val +
-      "</span>";
+      "</div></div>";
   }
-  feed.innerHTML +=
-    '<div class="msg system"><div class="msg-bubble">' +
-    '<strong style="color:var(--text-white);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Extracted Data</strong>' +
-    '<div class="extract-grid">' +
-    grid +
-    "</div>" +
-    '<div class="extract-populated">Calculator populated →</div>' +
-    "</div></div>";
+
+  container.innerHTML =
+    '<div class="sec-header">Parsed Listing Data</div>' +
+    '<div class="extracted-section">' +
+    '<div class="extracted-header">' +
+    '<span class="extracted-label">Extracted Fields</span>' +
+    '<span class="extracted-address">' + escapeHtml(displayAddr) + '</span>' +
+    '</div>' +
+    '<div class="extracted-grid">' +
+    cells +
+    '</div></div>';
 }
 
 function populateCalculator(data) {

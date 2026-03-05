@@ -45,15 +45,18 @@
 
     <!-- RESULTS MAIN AREA -->
     <div class="main">
-      <div id="results">
-        {% if r %}
-          {% include "partials/results_overview.html" %}
-        {% else %}
-        <div class="empty-state">
-          <div style="font-size:48px; text-align:center; margin:60px 0 16px;">🏢</div>
-          <p style="text-align:center; color:var(--text-dim); font-size:14px;">Enter property details or paste a listing to analyze</p>
+      <div class="results-scroll">
+        <div id="results">
+          {% if r %}
+            {% include "partials/results_overview.html" %}
+          {% else %}
+          <div class="empty-state">
+            <div style="font-size:48px; text-align:center; margin:60px 0 16px;">🏢</div>
+            <p style="text-align:center; color:var(--text-dim); font-size:14px;">Enter property details or paste a listing to analyze</p>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
+        <div id="extracted-data"></div>
       </div>
       <div class="footer-bar">
         <button class="footer-btn gold" id="saveBtn" hx-post="/api/properties" hx-include="[name]" hx-swap="none"
