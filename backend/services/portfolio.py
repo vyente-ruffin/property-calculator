@@ -93,6 +93,23 @@ def save_property(data: dict) -> int:
             "cash_on_cash": float(data.get("cash_on_cash", 0) or 0),
             "verdict": data.get("verdict"),
         }
+
+        # Deduplicate by address — update if exists, insert if new
+        if row["address"]:
+            existing = conn.execute(
+                "SELECT id FROM properties WHERE address = ?", (row["address"],)
+            ).fetchone()
+            if existing:
+                pid = existing["id"]
+                sets = ", ".join(f"{k} = ?" for k in row.keys())
+                conn.execute(
+                    f"UPDATE properties SET {sets}, parsed_at = strftime('%m/%d/%Y %I:%M %p', 'now', '-8 hours') WHERE id = ?",
+                    list(row.values()) + [pid],
+                )
+                conn.commit()
+                log.info("property_updated", id=pid, address=row["address"], price=row["price"])
+                return pid
+
         cols = ", ".join(row.keys())
         placeholders = ", ".join(["?"] * len(row))
         cur = conn.execute(

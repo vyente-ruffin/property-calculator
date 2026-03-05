@@ -252,7 +252,7 @@ function parseCurrency(str) {
   return str.replace(/[$,]/g, "");
 }
 
-function saveCurrentProperty() {
+function saveToGoogleSheet() {
   var form = document.getElementById("calc-form");
   if (!form) return;
   var formData = new FormData(form);
@@ -264,18 +264,24 @@ function saveCurrentProperty() {
     if (data[f]) data[f] = data[f].replace(/[^0-9.]/g, "");
   });
 
-  fetch("/api/portfolio", {
+  var btn = document.getElementById("saveBtn");
+  if (btn) btn.querySelector("span").textContent = "Saving...";
+
+  fetch("/api/properties", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({data: data})
-  }).then(function(r) { return r.json(); }).then(function(d) {
+  }).then(function(r) {
+    if (!r.ok) throw new Error(r.status === 503 ? "Google Sheets not configured" : "Save failed");
+    return r.json();
+  }).then(function(d) {
     var status = document.getElementById("saveStatus");
-    var btn = document.getElementById("saveBtn");
-    if (status) status.textContent = "✅ Saved #" + d.id;
+    if (status) status.textContent = "✅ Saved to Google Sheet";
     if (btn) btn.querySelector("span").textContent = "✅ Saved";
   }).catch(function(e) {
-    var btn = document.getElementById("saveBtn");
-    if (btn) btn.querySelector("span").textContent = "❌ Error";
+    var status = document.getElementById("saveStatus");
+    if (status) status.textContent = "❌ " + e.message;
+    if (btn) btn.querySelector("span").textContent = "Save to Google Sheet";
   });
 }
 
