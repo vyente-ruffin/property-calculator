@@ -39,12 +39,6 @@ async def log_frontend_event(req: LogEvent):
     return JSONResponse({"status": "ok"})
 
 
-@router.get("/api/webhook-url")
-async def get_webhook_url():
-    from backend.config import settings
-    return JSONResponse({"url": settings.N8N_WEBHOOK_URL})
-
-
 @router.get("/tab/portfolio", response_class=HTMLResponse)
 async def portfolio_view(request: Request):
     properties = get_all_properties()
