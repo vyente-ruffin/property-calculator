@@ -170,11 +170,13 @@ function showExtractedData(data, feed) {
 }
 
 function populateCalculator(data) {
+  var annualRent = parseCurrency(data["Annual Rent Income (Projected)"])
+    || parseCurrency(data["Annual Rent Income (Actual)"])
+    || parseCurrency(data["Annual Rent Income"]);
+
   var mapping = {
     purchase_price: parseCurrency(data["Price"]),
-    annual_gross_rents: parseCurrency(
-      data["Annual Rent Income (Projected)"]
-    ),
+    annual_gross_rents: annualRent,
     annual_noi_listing: parseCurrency(data["NOI"]),
     total_units: data["Total Units"] || "",
     property_url: data["Link"] || "",
@@ -193,6 +195,7 @@ function populateCalculator(data) {
     var el = document.querySelector('[name="' + name + '"]');
     if (el) {
       el.value = val;
+      el.dataset.raw = val;
     }
   }
 

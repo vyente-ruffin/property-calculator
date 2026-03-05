@@ -1,7 +1,12 @@
 import json
 import logging
 import re
+import sys
 from collections.abc import AsyncGenerator
+from pathlib import Path
+
+sys.path.insert(0, str(Path.home() / ".ai" / "logging"))
+from logger import get_logger
 
 from backend.services.openai_client import enrich_and_reextract, extract_fields
 from backend.services.page_scraper import scrape_listing_page
@@ -12,7 +17,7 @@ from backend.services.rentcast import (
 )
 from backend.services.web_search import search_listing_url
 
-logger = logging.getLogger(__name__)
+log = get_logger("parser")
 
 
 def _sse_event(step: str, status: str, data: dict | None = None) -> str:
@@ -47,12 +52,14 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
     yield _sse_event("parse_input", "running")
     try:
         raw_text, url, is_url_only = _parse_input(text)
+        log.info("step_parse_input", has_url=url is not None, text_length=len(raw_text), is_url_only=is_url_only)
         yield _sse_event(
             "parse_input",
             "done",
             {"has_url": url is not None, "text_length": len(raw_text), "is_url_only": is_url_only},
         )
     except Exception as e:
+        log.error("step_parse_input_failed", error=str(e))
         yield _sse_event("parse_input", "error", {"message": str(e)})
         return
 
@@ -63,6 +70,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
             scraped_text = await scrape_listing_page(url)
             if scraped_text:
                 raw_text = scraped_text
+                log.info("step_scrape_url", text_length=len(raw_text), url=url)
                 yield _sse_event(
                     "scrape_url", "done", {"text_length": len(raw_text)}
                 )
@@ -72,7 +80,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
                 )
                 return
         except Exception as e:
-            logger.exception("Page scraping failed")
+            log.error("step_scrape_failed", error=str(e), url=url)
             yield _sse_event("scrape_url", "error", {"message": str(e)})
             return
     else:
@@ -82,9 +90,10 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
     yield _sse_event("extract_fields", "running")
     try:
         first_pass = extract_fields(raw_text, url)
+        log.info("step_extract_fields", fields_found=len([v for v in first_pass.values() if v]), price=first_pass.get("Price"), address=first_pass.get("Address"))
         yield _sse_event("extract_fields", "done", {"fields": first_pass})
     except Exception as e:
-        logger.exception("OpenAI extraction failed")
+        log.error("step_extract_failed", error=str(e))
         yield _sse_event("extract_fields", "error", {"message": str(e)})
         return
 
@@ -108,7 +117,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
                     "search_link", "skipped", {"reason": "No address to search"}
                 )
         except Exception as e:
-            logger.exception("Web search failed")
+            log.error("step_search_link_failed", error=str(e))
             yield _sse_event("search_link", "error", {"message": str(e)})
     else:
         yield _sse_event(
@@ -150,7 +159,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
                     {"reason": f"Missing: {', '.join(missing)}"},
                 )
         except Exception as e:
-            logger.exception("Rentcast failed")
+            log.error("step_rentcast_failed", error=str(e))
             yield _sse_event("rentcast", "error", {"message": str(e)})
     else:
         reason = "Projected rent already present" if not projected_missing else "No unit mix available"
@@ -166,7 +175,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
             )
             yield _sse_event("reextract", "done", {"fields": final_data})
         except Exception as e:
-            logger.exception("Re-extraction failed")
+            log.error("step_reextract_failed", error=str(e))
             yield _sse_event("reextract", "error", {"message": str(e)})
             final_data = first_pass
     else:
@@ -193,4 +202,11 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
     )
 
     # Step 7: Complete
+    log.info("pipeline_complete",
+             price=final_data.get("Price"),
+             address=final_data.get("Address"),
+             city=final_data.get("City"),
+             units=final_data.get("Total Units"),
+             noi=final_data.get("NOI"),
+             annual_rent=final_data.get("Annual Rent Income (Actual)"))
     yield _sse_event("complete", "done", {"result": final_data})
