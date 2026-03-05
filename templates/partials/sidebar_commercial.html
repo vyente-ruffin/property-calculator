@@ -1,3 +1,7 @@
+{% set pp = params.get('purchase_price', '1970000')|int %}
+{% set dp_pct = params.get('down_payment_pct', '30')|int %}
+{% set down_amt = (pp * dp_pct / 100)|int %}
+{% set closing = (pp * 3 / 100)|int %}
 <form id="calc-form"
       hx-post="/calculate"
       hx-trigger="change"
@@ -5,84 +9,99 @@
       hx-include="[name]"
       hx-push-url="true">
   <input type="hidden" name="property_type" value="Commercial">
+  <input type="hidden" name="total_units" value="{{ params.get('total_units', '8') }}">
 
-  <div class="sec-header">Deal Parameters</div>
-  <div class="fields-grid">
-    <div class="field">
-      <label>Purchase Price</label>
-      <input type="number" name="purchase_price" value="{{ params.get('purchase_price', '1970000') }}">
+  <!-- Property Type Toggle -->
+  <div class="type-toggle">
+    <button type="button" hx-get="/sidebar/residential" hx-target="#sidebar-form" hx-swap="innerHTML">Residential</button>
+    <button type="button" class="active">Commercial</button>
+  </div>
+  <div class="type-hint"><strong>Residential</strong>: 4 units or less | <strong>Commercial</strong>: 5+ units</div>
+
+  <h2>Commercial Property Details</h2>
+
+  <div class="field">
+    <label>Purchase Price</label>
+    <input type="number" name="purchase_price" value="{{ params.get('purchase_price', '1970000') }}">
+  </div>
+  <div class="field-hint"><strong>Purchase Price:</strong> ${{ '{:,.0f}'.format(pp) }}</div>
+
+  <div class="field">
+    <label>% Down Payment</label>
+    <input type="number" name="down_payment_pct" value="{{ params.get('down_payment_pct', '30') }}" min="0" max="100">
+  </div>
+  <div class="field-hint"><strong>Amount Down:</strong> <span style="color:var(--down);">${{ '{:,.0f}'.format(down_amt) }}</span></div>
+
+  <div class="field">
+    <label>Estimated Closing Costs</label>
+    <div class="field-hint">${{ '{:,.0f}'.format(closing) }}</div>
+  </div>
+
+  <div class="field">
+    <label>Annual Gross Rents</label>
+    <input type="number" name="annual_gross_rents" value="{{ params.get('annual_gross_rents', '152195') }}" step="1000">
+  </div>
+
+  <div class="field">
+    <label>Annual NOI from Listing</label>
+    <input type="number" name="annual_noi_listing" value="{{ params.get('annual_noi_listing', '106548') }}" step="1000">
+  </div>
+
+  <div class="field">
+    <label>Vacancy Rate %</label>
+    <input type="number" name="vacancy_rate" value="{{ params.get('vacancy_rate', '3') }}" min="0" max="50">
+  </div>
+
+  <div class="field">
+    <label>All Other Operating Expenses</label>
+    <input type="number" name="other_expenses" value="{{ params.get('other_expenses', '5000') }}" step="500">
+  </div>
+
+  <h2>Loan Details</h2>
+
+  <div class="field">
+    <label>Interest Rate %</label>
+    <input type="number" name="interest_rate" value="{{ params.get('interest_rate', '6.5') }}" min="0" max="20" step="0.1">
+  </div>
+
+  <div class="field">
+    <label>Loan Period (Years)</label>
+    <select name="loan_years">
+      {% for y in range(1, 31) %}
+      <option value="{{ y }}" {% if params.get('loan_years', '25')|string == y|string %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <h2>Location</h2>
+
+  <div class="field">
+    <label>State</label>
+    <select name="state">
+      {% for st, name in [('AZ','Arizona'),('CA','California'),('IN','Indiana'),('NV','Nevada'),('TX','Texas'),('MI','Michigan')] %}
+      <option value="{{ st }}" {% if params.get('state', 'CA') == st %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <h2>Lookup Rates</h2>
+  <div class="rates-row">
+    <div class="rate-box">
+      <div class="rate-label">Tax Rate</div>
+      <div class="rate-val">1.25%</div>
     </div>
-    <div class="field">
-      <label>Annual Gross Rents</label>
-      <input type="number" name="annual_gross_rents" value="{{ params.get('annual_gross_rents', '152195') }}">
-    </div>
-    <div class="field">
-      <label>Annual NOI (Listing)</label>
-      <input type="number" name="annual_noi_listing" value="{{ params.get('annual_noi_listing', '106548') }}">
-    </div>
-    <div class="field">
-      <label>Other Expenses</label>
-      <input type="number" name="other_expenses" value="{{ params.get('other_expenses', '5000') }}">
-    </div>
-    <div class="field">
-      <label>Total Units</label>
-      <input type="number" name="total_units" value="{{ params.get('total_units', '8') }}">
-    </div>
-    <div class="field">
-      <label>State</label>
-      <select name="state">
-        {% for st in ['AZ','CA','IN','NV','TX','MI'] %}
-        <option value="{{ st }}" {% if params.get('state', 'CA') == st %}selected{% endif %}>{{ st }}</option>
-        {% endfor %}
-      </select>
+    <div class="rate-box">
+      <div class="rate-label">Insurance Rate</div>
+      <div class="rate-val">1.25%</div>
     </div>
   </div>
 
-  <div class="params-grid">
-    <div class="param">
-      <div class="param-header">
-        <span class="param-label">Down Payment</span>
-        <span class="param-val" id="dp-val">{{ params.get('down_payment_pct', '30') }}%</span>
-      </div>
-      <input type="range" name="down_payment_pct" min="0" max="100"
-             value="{{ params.get('down_payment_pct', '30') }}"
-             oninput="document.getElementById('dp-val').textContent=this.value+'%'"
-             hx-trigger="change">
-    </div>
-    <div class="param">
-      <div class="param-header">
-        <span class="param-label">Vacancy Rate</span>
-        <span class="param-val" id="vr-val">{{ params.get('vacancy_rate', '3') }}%</span>
-      </div>
-      <input type="range" name="vacancy_rate" min="0" max="50"
-             value="{{ params.get('vacancy_rate', '3') }}"
-             oninput="document.getElementById('vr-val').textContent=this.value+'%'"
-             hx-trigger="change">
-    </div>
-    <div class="param">
-      <div class="param-header">
-        <span class="param-label">Interest Rate</span>
-        <span class="param-val" id="ir-val">{{ params.get('interest_rate', '6.5') }}%</span>
-      </div>
-      <input type="range" name="interest_rate" min="0" max="20" step="0.1"
-             value="{{ params.get('interest_rate', '6.5') }}"
-             oninput="document.getElementById('ir-val').textContent=this.value+'%'"
-             hx-trigger="change">
-    </div>
-    <div class="param">
-      <div class="param-header">
-        <span class="param-label">Loan Period</span>
-        <span class="param-val" id="lp-val">{{ params.get('loan_years', '25') }} yrs</span>
-      </div>
-      <input type="range" name="loan_years" min="1" max="30"
-             value="{{ params.get('loan_years', '25') }}"
-             oninput="document.getElementById('lp-val').textContent=this.value+' yrs'"
-             hx-trigger="change">
-    </div>
+  <h2>Property URL</h2>
+  <div class="field">
+    <label>Property Listing URL</label>
+    <input type="text" name="property_url" value="{{ params.get('property_url', '') }}" placeholder="https://www.loopnet.com/...">
   </div>
-
-  <div class="field" style="margin-bottom:14px;">
-    <label>Property URL</label>
-    <input type="text" name="property_url" value="{{ params.get('property_url', '') }}" placeholder="https://...">
-  </div>
+  {% if params.get('property_url') %}
+  <a href="{{ params.get('property_url') }}" class="url-link" target="_blank">View Property Listing ↗</a>
+  {% endif %}
 </form>
