@@ -348,6 +348,10 @@ body {
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 .extracted-address { font-size: 13px; font-weight: 600; color: var(--gold); }
+.extracted-desc {
+  padding: 6px 10px; font-size: 13px; color: var(--text-muted);
+  font-style: italic; border-bottom: 1px solid var(--extract-border);
+}
 .extracted-grid {
   display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 1px; background: var(--extract-border);

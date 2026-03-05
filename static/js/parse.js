@@ -3,8 +3,6 @@
  * Ported from frontend/js/chat.js SSE pattern.
  */
 
-var parsedProperties = [];
-
 async function parseListing() {
   var input = document.getElementById("listingInput");
   var text = input.value.trim();
@@ -116,17 +114,16 @@ async function parseListing() {
     if (finalResult) {
       showExtractedData(finalResult);
       populateCalculator(finalResult);
-      parsedProperties.push({
-        address: finalResult["Address"] || "Unknown",
-        city: finalResult["City"] || "",
-        price: finalResult["Price"] || "",
-        units: finalResult["Total Units"] || "",
-        noi: finalResult["NOI"] || "",
-        capRate: finalResult["Cap Rate"] || "",
-        annualRent: finalResult["Annual Rent Income (Projected)"] || finalResult["Annual Rent Income (Actual)"] || "",
-        url: finalResult["Link"] || "",
-        timestamp: new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"})
-      });
+
+      // Auto-save to portfolio (SQLite)
+      fetch('/api/portfolio', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({data: finalResult})
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        var status = document.getElementById('saveStatus');
+        if (status) status.textContent = '✅ Auto-saved #' + d.id;
+      }).catch(function() {});
     }
   } catch (e) {
     feed.innerHTML +=
@@ -175,6 +172,7 @@ function showExtractedData(data) {
     ["NOI", "NOI"],
     ["Annual Rent Income (Projected)", "Annual Rent"],
     ["Monthly Rental Income (Projected)", "Monthly Rent"],
+    ["Date On Market", "Date on Market"],
     ["Unit Mix Summary", "Unit Mix"],
   ];
 
@@ -182,17 +180,22 @@ function showExtractedData(data) {
   for (var i = 0; i < fields.length; i++) {
     var key = fields[i][0];
     var label = fields[i][1];
-    var val = data[key] || "--";
+    var val = data[key] || data[key.replace("(Projected)", "(Actual)")] || "--";
     if (typeof val === "string") {
       val = val.replace(/\.00\b/g, "");
     }
+    var span = (label === "Unit Mix") ? ' style="grid-column:span 2;"' : '';
     cells +=
-      '<div class="extracted-cell"><div class="ek">' +
+      '<div class="extracted-cell"' + span + '><div class="ek">' +
       label +
       '</div><div class="ev">' +
       val +
       "</div></div>";
   }
+
+  // Description
+  var desc = data["Description"] || "";
+  var descHtml = desc ? '<div class="extracted-desc">' + escapeHtml(desc) + '</div>' : '';
 
   container.innerHTML =
     '<div class="sec-header">Parsed Listing Data</div>' +
@@ -201,6 +204,7 @@ function showExtractedData(data) {
     '<span class="extracted-label">Extracted Fields</span>' +
     '<span class="extracted-address">' + escapeHtml(displayAddr) + '</span>' +
     '</div>' +
+    descHtml +
     '<div class="extracted-grid">' +
     cells +
     '</div></div>';
@@ -248,20 +252,31 @@ function parseCurrency(str) {
   return str.replace(/[$,]/g, "");
 }
 
-function showPortfolio() {
-  var container = document.getElementById('results');
-  if (parsedProperties.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div style="font-size:48px;text-align:center;margin:60px 0 16px;">📊</div><p style="text-align:center;color:var(--text-dim);font-size:14px;">No properties parsed yet. Paste a listing URL to get started.</p></div>';
-    return;
-  }
-  var html = '<div class="sec-header" style="margin-top:0;">Portfolio — Session Log</div>';
-  html += '<div class="tbl-container"><table class="tbl"><thead><tr><th>Address</th><th>Price</th><th>Units</th><th>Cap Rate</th><th>NOI</th><th>Annual Rent</th><th>Parsed</th></tr></thead><tbody>';
-  for (var i = parsedProperties.length - 1; i >= 0; i--) {
-    var p = parsedProperties[i];
-    html += '<tr><td>' + (p.address || '--') + '</td><td>' + (p.price || '--') + '</td><td>' + (p.units || '--') + '</td><td>' + (p.capRate || '--') + '</td><td>' + (p.noi || '--') + '</td><td>' + (p.annualRent || '--') + '</td><td style="font-size:11px;color:var(--text-dim);">' + p.timestamp + '</td></tr>';
-  }
-  html += '</tbody></table></div>';
-  container.innerHTML = html;
+function saveCurrentProperty() {
+  var form = document.getElementById("calc-form");
+  if (!form) return;
+  var formData = new FormData(form);
+  var data = {};
+  formData.forEach(function(val, key) { data[key] = val; });
+
+  // Strip currency formatting
+  ["purchase_price", "annual_gross_rents", "annual_noi_listing", "other_expenses", "monthly_rent"].forEach(function(f) {
+    if (data[f]) data[f] = data[f].replace(/[^0-9.]/g, "");
+  });
+
+  fetch("/api/portfolio", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({data: data})
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    var status = document.getElementById("saveStatus");
+    var btn = document.getElementById("saveBtn");
+    if (status) status.textContent = "✅ Saved #" + d.id;
+    if (btn) btn.querySelector("span").textContent = "✅ Saved";
+  }).catch(function(e) {
+    var btn = document.getElementById("saveBtn");
+    if (btn) btn.querySelector("span").textContent = "❌ Error";
+  });
 }
 
 function escapeHtml(str) {

@@ -59,14 +59,13 @@
         <div id="extracted-data"></div>
       </div>
       <div class="footer-bar">
-        <button class="footer-btn gold" id="saveBtn" hx-post="/api/properties" hx-include="[name]" hx-swap="none"
-                hx-on::after-request="this.querySelector('span').textContent=event.detail.xhr.status===200?'✅ Saved':'❌ Error'">
+        <button class="footer-btn gold" id="saveBtn" onclick="saveCurrentProperty()">
           💾 <span>Save to Portfolio</span>
         </button>
         <button class="footer-btn" onclick="navigator.clipboard.writeText(window.location.href);this.querySelector('span').textContent='✅ Link Copied!'">
           🔗 <span>Share Link</span>
         </button>
-        <button class="footer-btn" onclick="showPortfolio()">
+        <button class="footer-btn" hx-get="/tab/portfolio" hx-target="#results" hx-swap="innerHTML">
           📊 <span>Portfolio</span>
         </button>
         <span class="footer-status" id="saveStatus">not saved</span>

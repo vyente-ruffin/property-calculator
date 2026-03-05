@@ -18,6 +18,7 @@ from backend.routes.health import router as health_router
 from backend.routes.pages import router as pages_router
 from backend.routes.parse import router as parse_router
 from backend.routes.sheets import router as sheets_router
+from backend.routes.portfolio import router as portfolio_router
 
 app = FastAPI(title="Property Parser")
 
@@ -29,6 +30,7 @@ app.include_router(parse_router, prefix="/api")
 app.include_router(sheets_router, prefix="/api")
 app.include_router(calc_router)
 app.include_router(pages_router)
+app.include_router(portfolio_router)
 
 # Serve favicon
 @app.get("/favicon.png")
