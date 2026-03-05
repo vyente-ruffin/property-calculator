@@ -363,6 +363,32 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Unit Mix Table */
+.unit-mix-section { border-top: 1px solid var(--extract-border); }
+.unit-mix-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px; background: var(--tbl-head);
+}
+.unit-mix-title {
+  font-size: 11px; font-weight: 600; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.unit-mix-total { font-size: 12px; color: var(--text-muted); }
+.unit-mix-total strong { color: var(--gold); }
+.unit-mix-table { width: 100%; border-collapse: collapse; }
+.unit-mix-table th {
+  padding: 3px 10px; text-align: left; font-size: 10px; font-weight: 600;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px;
+  background: var(--tbl-head); border-bottom: 1px solid var(--tbl-border);
+}
+.unit-mix-table th:not(:first-child) { text-align: right; }
+.unit-mix-table td { padding: 4px 10px; font-size: 13px; border-bottom: 1px solid var(--tbl-border); }
+.unit-mix-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.unit-mix-table tbody tr:last-child td { border-bottom: none; }
+.unit-mix-table .unit-type { font-weight: 600; }
+.unit-mix-table .rent { color: var(--up); font-weight: 600; }
+.unit-mix-table .count { color: var(--text-muted); }
+
 /* ── MIDDLE: Input Sidebar ── */
 .sidebar {
   width: 280px; min-width: 280px;

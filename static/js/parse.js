@@ -173,7 +173,6 @@ function showExtractedData(data) {
     ["Annual Rent Income (Projected)", "Annual Rent"],
     ["Monthly Rental Income (Projected)", "Monthly Rent"],
     ["Date On Market", "Date on Market"],
-    ["Unit Mix Summary", "Unit Mix"],
   ];
 
   var cells = "";
@@ -184,18 +183,28 @@ function showExtractedData(data) {
     if (typeof val === "string") {
       val = val.replace(/\.00\b/g, "");
     }
-    var span = (label === "Unit Mix") ? ' style="grid-column:span 2;"' : '';
     cells +=
-      '<div class="extracted-cell"' + span + '><div class="ek">' +
+      '<div class="extracted-cell"><div class="ek">' +
       label +
       '</div><div class="ev">' +
       val +
       "</div></div>";
   }
 
+  // Price per unit
+  var price = parseInt(String(data["Price"] || "0").replace(/[^0-9]/g, ""), 10);
+  var units = parseInt(data["Total Units"] || "0", 10);
+  if (price && units) {
+    cells += '<div class="extracted-cell"><div class="ek">Price/Unit</div><div class="ev">$' + Math.round(price / units).toLocaleString("en-US") + '</div></div>';
+  }
+
   // Description
   var desc = data["Description"] || "";
   var descHtml = desc ? '<div class="extracted-desc">' + escapeHtml(desc) + '</div>' : '';
+
+  // Unit Mix table
+  var unitMixRaw = data["Unit Mix Summary"] || "";
+  var unitMixHtml = buildUnitMixTable(unitMixRaw);
 
   container.innerHTML =
     '<div class="sec-header">Parsed Listing Data</div>' +
@@ -207,7 +216,55 @@ function showExtractedData(data) {
     descHtml +
     '<div class="extracted-grid">' +
     cells +
-    '</div></div>';
+    '</div>' +
+    unitMixHtml +
+    '</div>';
+}
+
+function buildUnitMixTable(raw) {
+  if (!raw) return '';
+  // Parse "2x2BD/1BA@$2030 | 2x3BD/2BA@$2960" format
+  var entries = raw.split('|').map(function(s) { return s.trim(); }).filter(Boolean);
+  var rows = [];
+  var totalUnits = 0;
+  var totalRent = 0;
+
+  for (var i = 0; i < entries.length; i++) {
+    var m = entries[i].match(/(\d+)x(\d+)(?:BD)?\/(\d+)(?:BA)?@\$?([\d,]+)/i);
+    if (!m) {
+      // Try alternate format like "1x0/1@$764"
+      m = entries[i].match(/(\d+)x(\d+)\/(\d+)@\$?([\d,]+)/i);
+    }
+    if (m) {
+      var count = parseInt(m[1], 10);
+      var beds = parseInt(m[2], 10);
+      var baths = parseInt(m[3], 10);
+      var rent = parseInt(m[4].replace(/,/g, ''), 10);
+      var typeName = beds === 0 ? 'Studio' : beds + ' BD';
+      typeName += ' / ' + baths + ' BA';
+      totalUnits += count;
+      totalRent += count * rent;
+      rows.push({ type: typeName, count: count, rent: rent, subtotal: count * rent });
+    }
+  }
+
+  if (rows.length === 0) return '';
+
+  var html = '<div class="unit-mix-section">';
+  html += '<div class="unit-mix-header">';
+  html += '<span class="unit-mix-title">Unit Mix</span>';
+  html += '<span class="unit-mix-total">' + totalUnits + ' units · <strong>$' + totalRent.toLocaleString('en-US') + '/mo</strong></span>';
+  html += '</div>';
+  html += '<table class="unit-mix-table"><thead><tr><th>Type</th><th>Count</th><th>Rent</th><th>Subtotal</th></tr></thead><tbody>';
+  for (var j = 0; j < rows.length; j++) {
+    var r = rows[j];
+    html += '<tr><td class="unit-type">' + r.type + '</td>';
+    html += '<td class="count">' + r.count + '</td>';
+    html += '<td class="rent">$' + r.rent.toLocaleString('en-US') + '</td>';
+    html += '<td>$' + r.subtotal.toLocaleString('en-US') + '</td></tr>';
+  }
+  html += '</tbody></table></div>';
+  return html;
 }
 
 function populateCalculator(data) {

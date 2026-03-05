@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>Unit Mix Format Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1117; --bg-card: #181b25; --border: #2a2d3a;
+  --text: #e8eaf0; --text-muted: #8b8fa3; --text-dim: #5a5e72;
+  --gold: #d4a853; --up: #34d399; --tbl-head: #1a1d28; --tbl-border: #2a2d3a;
+  --extract-bg: #181b25; --extract-border: #2a2d3a;
+}
+body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: var(--text); padding: 30px; }
+h3 { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+
+/* ─── Extracted section (existing design) ─── */
+.extracted-section { border: 1px solid var(--extract-border); border-radius: 5px; background: var(--extract-bg); overflow: hidden; margin-bottom: 30px; max-width: 700px; }
+.extracted-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: var(--tbl-head); border-bottom: 1px solid var(--extract-border); }
+.extracted-label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.extracted-address { font-size: 13px; font-weight: 600; color: var(--gold); }
+.extracted-desc { padding: 6px 10px; font-size: 13px; color: var(--text-muted); font-style: italic; border-bottom: 1px solid var(--extract-border); }
+.extracted-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--extract-border); }
+.extracted-cell { background: var(--extract-bg); padding: 5px 10px; }
+.ek { font-size: 10px; color: var(--text-dim); }
+.ev { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* ─── Unit Mix Table (NEW) ─── */
+.unit-mix-section { border-top: 1px solid var(--extract-border); }
+.unit-mix-header { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; background: var(--tbl-head); }
+.unit-mix-title { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.unit-mix-total { font-size: 12px; color: var(--text-muted); }
+.unit-mix-total strong { color: var(--gold); }
+
+.unit-mix-table { width: 100%; border-collapse: collapse; }
+.unit-mix-table th {
+  padding: 3px 10px; text-align: left; font-size: 10px; font-weight: 600;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px;
+  background: var(--tbl-head); border-bottom: 1px solid var(--tbl-border);
+}
+.unit-mix-table th:not(:first-child) { text-align: right; }
+.unit-mix-table td {
+  padding: 4px 10px; font-size: 13px; border-bottom: 1px solid var(--tbl-border);
+}
+.unit-mix-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.unit-mix-table tbody tr:last-child td { border-bottom: none; }
+.unit-mix-table .unit-type { font-weight: 600; color: var(--text); }
+.unit-mix-table .rent { color: var(--up); font-weight: 600; }
+.unit-mix-table .count { color: var(--text-muted); }
+
+/* Separator */
+.sep { border: none; border-top: 1px solid var(--border); margin: 30px 0; max-width: 700px; }
+</style>
+</head>
+<body>
+
+<h3>Example 1 — Small property (4 units, 2 types)</h3>
+<div class="extracted-section">
+  <div class="extracted-header">
+    <span class="extracted-label">Extracted Fields</span>
+    <span class="extracted-address">402-408 Olivewood Terrace, San Diego CA 92113</span>
+  </div>
+  <div class="extracted-desc">4-unit property with upgraded units and one vacant unit for lease-up potential.</div>
+  <div class="extracted-grid">
+    <div class="extracted-cell"><div class="ek">Price</div><div class="ev">$995,000</div></div>
+    <div class="extracted-cell"><div class="ek">Total Units</div><div class="ev">4</div></div>
+    <div class="extracted-cell"><div class="ek">Cap Rate</div><div class="ev">4.10%</div></div>
+    <div class="extracted-cell"><div class="ek">NOI</div><div class="ev">$40,890</div></div>
+    <div class="extracted-cell"><div class="ek">Annual Rent</div><div class="ev">$119,760</div></div>
+    <div class="extracted-cell"><div class="ek">Monthly Rent</div><div class="ev">$9,980</div></div>
+    <div class="extracted-cell"><div class="ek">Date on Market</div><div class="ev">2026-03-02</div></div>
+    <div class="extracted-cell"><div class="ek">Price/Unit</div><div class="ev">$248,750</div></div>
+  </div>
+  <!-- UNIT MIX TABLE -->
+  <div class="unit-mix-section">
+    <div class="unit-mix-header">
+      <span class="unit-mix-title">Unit Mix</span>
+      <span class="unit-mix-total">4 units · <strong>$9,980/mo</strong></span>
+    </div>
+    <table class="unit-mix-table">
+      <thead><tr><th>Type</th><th>Count</th><th>Rent</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        <tr><td class="unit-type">2 BD / 1 BA</td><td class="count">2</td><td class="rent">$2,030</td><td>$4,060</td></tr>
+        <tr><td class="unit-type">3 BD / 2 BA</td><td class="count">2</td><td class="rent">$2,960</td><td>$5,920</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="sep">
+
+<h3>Example 2 — Large property (10 units, all studios, varying rents)</h3>
+<div class="extracted-section">
+  <div class="extracted-header">
+    <span class="extracted-label">Extracted Fields</span>
+    <span class="extracted-address">1836 Lansdowne Ave, Los Angeles CA 90032</span>
+  </div>
+  <div class="extracted-desc">10-unit studio building in El Sereno with mixed rent levels.</div>
+  <div class="extracted-grid">
+    <div class="extracted-cell"><div class="ek">Price</div><div class="ev">$1,050,000</div></div>
+    <div class="extracted-cell"><div class="ek">Total Units</div><div class="ev">10</div></div>
+    <div class="extracted-cell"><div class="ek">Cap Rate</div><div class="ev">5.20%</div></div>
+    <div class="extracted-cell"><div class="ek">NOI</div><div class="ev">$54,600</div></div>
+    <div class="extracted-cell"><div class="ek">Annual Rent</div><div class="ev">$98,472</div></div>
+    <div class="extracted-cell"><div class="ek">Monthly Rent</div><div class="ev">$8,206</div></div>
+    <div class="extracted-cell"><div class="ek">Date on Market</div><div class="ev">2025-10-14</div></div>
+    <div class="extracted-cell"><div class="ek">Price/Unit</div><div class="ev">$105,000</div></div>
+  </div>
+  <!-- UNIT MIX TABLE — each unit listed separately since all differ -->
+  <div class="unit-mix-section">
+    <div class="unit-mix-header">
+      <span class="unit-mix-title">Unit Mix</span>
+      <span class="unit-mix-total">10 units · <strong>$8,206/mo</strong></span>
+    </div>
+    <table class="unit-mix-table">
+      <thead><tr><th>Type</th><th>Count</th><th>Rent</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        <tr><td class="unit-type">Studio / 1 BA</td><td class="count">1</td><td class="rent">$295</td><td>$295</td></tr>
+        <tr><td class="unit-type">Studio / 1 BA</td><td class="count">1</td><td class="rent">$481</td><td>$481</td></tr>
+        <tr><td class="unit-type">Studio / 1 BA</td><td class="count">1</td><td class="rent">$707</td><td>$707</td></tr>
+        <tr><td class="unit-type">Studio / 1 BA</td><td class="count">1</td><td class="rent">$736</td><td>$736</td></tr>
+        <tr><td class="unit-type">Studio / 1 BA</td><td class="count">2</td><td class="rent">$764</td><td>$1,528</td></tr>
+        <tr><td class="unit-type">Studio / 1 BA</td><td class="count">2</td><td class="rent">$1,146</td><td>$2,292</td></tr>
+        <tr><td class="unit-type">Studio / 1 BA</td><td class="count">2</td><td class="rent">$1,150</td><td>$2,300</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="sep">
+
+<h3>Raw format (kept for Google Sheets)</h3>
+<div style="font-size:12px;color:var(--text-dim);padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:5px;max-width:700px;font-family:monospace;word-break:break-all;">
+  1x0/1@$764 | 1x0/1@$1,146 | 1x0/1@$1,150 | 1x0/1@$764 | 1x0/1@$707 | 1x0/1@$1,150 | 1x0/1@$295 | 1x0/1@$481 | 1x0/1@$736 | 1x0/1@$1,300
+</div>
+
+</body>
+</html>
