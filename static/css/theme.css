@@ -182,12 +182,13 @@ body {
   display: flex; align-items: center; gap: 8px;
   font-size: 14px; font-weight: 600;
 }
-.chat-close {
+.chat-collapse {
   background: none; border: none; color: var(--text-muted);
-  font-size: 18px; cursor: pointer; width: 28px; height: 28px;
+  font-size: 14px; cursor: pointer; width: 28px; height: 28px;
   display: grid; place-items: center; border-radius: 4px;
+  transition: transform 0.3s;
 }
-.chat-close:hover { background: var(--btn-hover); color: var(--text); }
+.chat-collapse:hover { background: var(--btn-hover); color: var(--text); }
 .chat-body {
   flex: 1; padding: 16px; overflow-y: auto;
   font-size: 14px; color: var(--text-muted);
@@ -214,6 +215,14 @@ body {
   cursor: pointer; font-family: inherit; transition: all 0.2s;
 }
 .btn-parse:hover { filter: brightness(1.1); }
+.btn-parse:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-parse.parsing {
+  animation: pulse-gold 1.2s ease-in-out infinite;
+}
+@keyframes pulse-gold {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
 .btn-ghost {
   background: transparent; color: var(--text-dim);
   border: none; padding: 7px 12px; border-radius: 7px;

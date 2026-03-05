@@ -38,6 +38,8 @@
     if (!panel || !btn) return;
     panel.classList.toggle('open');
     btn.classList.toggle('active');
+    var arrow = panel.querySelector('.chat-collapse');
+    if (arrow) arrow.textContent = panel.classList.contains('open') ? '◀' : '▶';
   };
 
   /* Update rate display boxes based on selected state */

@@ -8,7 +8,16 @@ async function parseListing() {
   var text = input.value.trim();
   if (!text) return;
 
+  var parseBtn = document.getElementById("parseBtn");
   var feed = document.getElementById("chatFeed");
+
+  // Disable button and show loading state
+  parseBtn.disabled = true;
+  parseBtn.textContent = "Parsing...";
+  parseBtn.classList.add("parsing");
+
+  // Clear input for next property
+  input.value = "";
 
   // Add user message
   feed.innerHTML +=
@@ -110,6 +119,11 @@ async function parseListing() {
       e.message +
       "</div></div>";
   }
+
+  // Reset button
+  parseBtn.disabled = false;
+  parseBtn.textContent = "Parse";
+  parseBtn.classList.remove("parsing");
 
   feed.scrollTop = feed.scrollHeight;
 }
