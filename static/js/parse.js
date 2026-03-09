@@ -301,6 +301,8 @@ function populateCalculator(data) {
   var stMatch = city.match(/,\s*([A-Z]{2})\s/);
   if (stMatch) mapping["state"] = stMatch[1];
 
+  var currencyFields = ['purchase_price', 'annual_gross_rents', 'annual_noi_listing', 'other_expenses', 'monthly_rent'];
+
   var keys = Object.keys(mapping);
   var populated = {};
   for (var i = 0; i < keys.length; i++) {
@@ -309,8 +311,14 @@ function populateCalculator(data) {
     if (!val) continue;
     var el = document.querySelector('[name="' + name + '"]');
     if (el) {
-      el.value = val;
       el.dataset.raw = val;
+      // Format currency fields as $xxx,xxx
+      if (currencyFields.indexOf(name) >= 0) {
+        var n = parseInt(String(val).replace(/[^0-9]/g, ''), 10);
+        el.value = isNaN(n) ? '$0' : '$' + n.toLocaleString('en-US');
+      } else {
+        el.value = val;
+      }
       populated[name] = val;
     }
   }
