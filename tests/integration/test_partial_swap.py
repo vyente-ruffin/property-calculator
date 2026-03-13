@@ -23,7 +23,7 @@ def test_calculate_returns_fragment_only(client):
     assert "<html" not in response.text.lower()
     assert "<head" not in response.text.lower()
     assert "<body" not in response.text.lower()
-    assert "deal-eval" in response.text.lower()
+    assert "verdict-bar" in response.text.lower()
 
 
 def test_calculate_sets_push_url_header(client):

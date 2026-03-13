@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     AZURE_OPENAI_ENDPOINT: str = ""
     AZURE_OPENAI_DEPLOYMENT: str = "gpt-4o"
     RENTCAST_API_KEY: str = ""
+    APIFY_API_TOKEN: str = ""
+    BRIGHTDATA_BROWSER_WSS: str = ""
     GOOGLE_SERVICE_ACCOUNT: str = "{}"
     GOOGLE_SHEET_ID: str = "1dVf1UShQry4nDvM3HbqM9ts0ltbKnruEDKd6lZ_xAMg"
 

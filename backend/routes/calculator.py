@@ -7,12 +7,9 @@ GET /sidebar/*: swap sidebar partials for property type switching.
 
 from __future__ import annotations
 
-import sys
 from decimal import Decimal, InvalidOperation
-from pathlib import Path
 
-sys.path.insert(0, str(Path.home() / ".ai" / "logging"))
-from logger import get_logger
+from src.core.logger import get_logger
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
@@ -54,7 +51,7 @@ async def calculate_property(request: Request):
             monthly_rent=Decimal(str(data.get("monthly_rent", "5000"))) if data.get("monthly_rent") else None,
         )
     except (InvalidOperation, ValueError) as e:
-        log.error("calculation_input_error", error=str(e), form_data=str(data))
+        log.error("calculation_input_error: %s form_data=%s", e, str(data))
         return templates.TemplateResponse(
             request=request,
             name="partials/results_overview.html",
@@ -64,13 +61,9 @@ async def calculate_property(request: Request):
     result = calculate(inp)
     verdict = generate_verdict(result)
 
-    log.info("calculation_completed",
-             property_type=inp.property_type,
-             purchase_price=str(inp.purchase_price),
-             state=inp.state,
-             verdict=verdict.verdict,
-             cash_flow=str(result.annual_cash_flow),
-             coc=str(result.cash_on_cash))
+    log.info("calculation_completed type=%s price=%s state=%s verdict=%s cf=%s coc=%s",
+             inp.property_type, inp.purchase_price, inp.state,
+             verdict.verdict, result.annual_cash_flow, result.cash_on_cash)
 
     # Build URL params for HX-Push-Url
     params = "&".join(f"{k}={v}" for k, v in data.items() if v)

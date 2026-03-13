@@ -8,71 +8,75 @@
       <span class="brand-text">405 Network</span>
     </div>
     <div class="header-center">
-      <button class="chat-toggle-btn active" id="chatToggle" onclick="toggleChat()">⚡ Parser</button>
-      <span class="header-title">Property Analyzer</span>
+      <span class="header-title">Property Investment Analyzer</span>
     </div>
-    <button onclick="toggleTheme()" class="theme-btn" id="themeBtn" title="Toggle theme">☀️</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="parser-mobile-trigger" onclick="toggleParserMobile()">Parser</button>
+      <button onclick="toggleTheme()" class="theme-btn" id="themeBtn" title="Toggle theme">&#9728;&#65039;</button>
+    </div>
   </header>
 
   <div class="app-body">
-    <!-- CHAT PANEL (collapsible) -->
-    <div class="chat-panel open" id="chatPanel">
-      <div class="chat-hdr">
-        <div class="chat-hdr-left">⚡ Listing Parser</div>
-        <button class="chat-collapse" onclick="toggleChat()" title="Collapse panel">◀</button>
+    <!-- PARSER PANEL (collapsible left column) -->
+    <aside class="parser" id="parserPanel" aria-label="Listing Parser">
+      <div class="parser-hdr">
+        <span class="parser-hdr-label">Listing Parser</span>
+        <button class="parser-toggle" id="parserToggleBtn" onclick="toggleParser()" title="Collapse parser" aria-expanded="true" aria-controls="parserPanel">&#9664;</button>
       </div>
-      <div class="chat-body" id="chatFeed">
+      <div class="parser-body" id="chatFeed">
         <div class="msg system">
-          <div class="msg-bubble">Paste a property listing URL and I'll pull the details and run the investment analysis for you.</div>
+          <div class="msg-bubble">Paste a property listing URL or raw text to analyze.</div>
         </div>
       </div>
-      <div class="chat-footer">
-        <textarea id="listingInput" rows="2" placeholder="Paste a property listing URL..."
+      <div class="parser-footer">
+        <textarea id="listingInput" rows="3" placeholder="Paste a listing URL or raw text..."
                   onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();parseListing();}"></textarea>
-        <div class="chat-compose-actions">
+        <div class="parser-actions">
           <button class="btn-ghost" onclick="document.getElementById('listingInput').value=''">Clear</button>
-          <button class="btn-parse" id="parseBtn" onclick="parseListing()">Analyze Property</button>
+          <button class="btn-parse" id="parseBtn" onclick="parseListing()">Analyze</button>
         </div>
       </div>
-    </div>
+    </aside>
 
     <!-- INPUT SIDEBAR -->
-    <div class="sidebar">
-      <div id="sidebar-form">
-        {% include "partials/sidebar_commercial.html" %}
+    <aside class="sidebar" aria-label="Calculator inputs">
+      <div class="sidebar-inner" id="sidebar-form">
+        {% if params.get('property_type') == 'Residential' %}
+          {% include "partials/sidebar_residential.html" %}
+        {% else %}
+          {% include "partials/sidebar_commercial.html" %}
+        {% endif %}
       </div>
-    </div>
+    </aside>
 
-    <!-- RESULTS MAIN AREA -->
-    <div class="main">
-      <div class="results-scroll">
+    <!-- RESULTS COLUMN -->
+    <div class="results-col">
+      <main class="main" id="resultsPanel">
         <div id="results">
           {% if r %}
             {% include "partials/results_overview.html" %}
           {% else %}
           <div class="empty-state">
-            <div style="font-size:48px; text-align:center; margin:60px 0 16px;">🏢</div>
+            <div style="font-size:48px; text-align:center; margin:60px 0 16px;">&#127970;</div>
             <p style="text-align:center; color:var(--text-dim); font-size:14px;">Enter property details or paste a listing to analyze</p>
           </div>
           {% endif %}
         </div>
         <div id="extracted-data"></div>
-      </div>
-      <div class="footer-bar">
+      </main>
+
+      <footer class="footer-bar">
         <button class="footer-btn gold" id="saveBtn" onclick="saveToGoogleSheet()">
-          💾 <span>Save to Google Sheet</span>
-        </button>
-        <button class="footer-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1dVf1UShQry4nDvM3HbqM9ts0ltbKnruEDKd6lZ_xAMg','_blank')">
-          📄 <span>Visit Google Sheet</span>
+          Save to Google Sheet
         </button>
         <button class="footer-btn" hx-get="/tab/portfolio" hx-target="#results" hx-swap="innerHTML">
-          📊 <span>Portfolio</span>
+          Portfolio
         </button>
-        <button class="footer-btn" onclick="navigator.clipboard.writeText(window.location.href);this.querySelector('span').textContent='✅ Copied!'">
-          🔗 <span>Share Link</span>
+        <button class="footer-btn" onclick="navigator.clipboard.writeText(window.location.href);var s=this,orig=s.textContent;s.textContent='Copied!';setTimeout(function(){s.textContent=orig;},2000);">
+          Share Link
         </button>
         <span class="footer-status" id="saveStatus">not saved</span>
-      </div>
+      </footer>
     </div>
   </div>
 </div>

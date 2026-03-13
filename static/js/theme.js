@@ -1,48 +1,125 @@
 (function() {
-  const html = document.documentElement;
-  const saved = localStorage.getItem('theme') || 'dark';
+  var html = document.documentElement;
+  var saved = localStorage.getItem('theme') || 'dark';
   html.setAttribute('data-theme', saved);
 
   /* State rate data (matches backend/data/states.py and Streamlit app.py) */
   var STATE_RATES = {
     AZ: { tax: 0.62, insurance_comm: 0.5, insurance_resi: 1.0 },
-    CA: { tax: 1.2, insurance_comm: 1.2, insurance_resi: 1.0 },
-    IN: { tax: 1.4, insurance_comm: 0.5, insurance_resi: 1.0 },
-    NV: { tax: 0.6, insurance_comm: 0.5, insurance_resi: 1.0 },
+    CA: { tax: 1.25, insurance_comm: 1.25, insurance_resi: 1.0 },
+    IN: { tax: 1.37, insurance_comm: 0.5, insurance_resi: 1.0 },
+    NV: { tax: 0.65, insurance_comm: 0.5, insurance_resi: 1.0 },
     TX: { tax: 1.7, insurance_comm: 0.5, insurance_resi: 1.0 },
-    MI: { tax: 3.2, insurance_comm: 0.5, insurance_resi: 1.0 }
+    MI: { tax: 3.21, insurance_comm: 0.5, insurance_resi: 1.0 }
   };
 
   /* Theme toggle with icon */
   window.toggleTheme = function() {
-    const current = html.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
+    var current = html.getAttribute('data-theme');
+    var next = current === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
-    const btn = document.getElementById('themeBtn');
-    if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+    var btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = next === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
   };
 
   /* Restore theme icon on load */
   document.addEventListener('DOMContentLoaded', function() {
-    const btn = document.getElementById('themeBtn');
-    if (btn) btn.textContent = html.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+    var btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = html.getAttribute('data-theme') === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     initCurrencyFormatting();
     updateRateDisplay();
+    initCollapseState();
+    bindDrawerKeyboard();
   });
 
-  /* Chat panel toggle */
-  window.toggleChat = function() {
-    var panel = document.getElementById('chatPanel');
-    var btn = document.getElementById('chatToggle');
-    if (!panel || !btn) return;
-    panel.classList.toggle('open');
-    btn.classList.toggle('active');
-    var arrow = panel.querySelector('.chat-collapse');
-    if (arrow) arrow.textContent = panel.classList.contains('open') ? '◀' : '▶';
+  /* ════════════════════════════════════════════════
+     PARSER PANEL TOGGLE
+     ════════════════════════════════════════════════ */
+
+  window.toggleParser = function() {
+    var panel = document.getElementById('parserPanel');
+    var btn = document.getElementById('parserToggleBtn');
+    if (!panel) return;
+    var isClosed = panel.classList.contains('closed');
+    panel.classList.toggle('closed', !isClosed);
+    if (btn) btn.setAttribute('aria-expanded', isClosed ? 'true' : 'false');
   };
 
-  /* Update rate display boxes based on selected state */
+  /* Mobile parser as full-screen modal */
+  window.toggleParserMobile = function() {
+    var panel = document.getElementById('parserPanel');
+    if (!panel) return;
+    panel.classList.toggle('mobile-open');
+  };
+
+  /* ════════════════════════════════════════════════
+     DRAWER COLLAPSE STATE (URL persistence)
+     ════════════════════════════════════════════════ */
+
+  function initCollapseState() {
+    var params = new URLSearchParams(location.search);
+    var hideParam = params.get('hide');
+
+    if (hideParam !== null) {
+      var hidden = hideParam.split(',').filter(Boolean);
+      document.querySelectorAll('[data-section]').forEach(function(el) {
+        var key = el.dataset.section;
+        if (hidden.indexOf(key) !== -1) {
+          el.classList.remove('open');
+          var hdr = el.querySelector('.drawer-hdr');
+          if (hdr) hdr.setAttribute('aria-expanded', 'false');
+        } else {
+          el.classList.add('open');
+          var hdr2 = el.querySelector('.drawer-hdr');
+          if (hdr2) hdr2.setAttribute('aria-expanded', 'true');
+        }
+      });
+    }
+  }
+
+  window.toggleSection = function(el) {
+    el.classList.toggle('open');
+    var hdr = el.querySelector('.drawer-hdr');
+    if (hdr) {
+      hdr.setAttribute('aria-expanded', el.classList.contains('open') ? 'true' : 'false');
+    }
+    updateCollapseUrl();
+  };
+
+  function updateCollapseUrl() {
+    var hidden = [];
+    document.querySelectorAll('[data-section]').forEach(function(el) {
+      if (!el.classList.contains('open')) {
+        hidden.push(el.dataset.section);
+      }
+    });
+    var params = new URLSearchParams(location.search);
+    if (hidden.length) {
+      params.set('hide', hidden.join(','));
+    } else {
+      params.delete('hide');
+    }
+    var qs = params.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+  }
+
+  /* Keyboard: Enter/Space toggle drawers */
+  function bindDrawerKeyboard() {
+    document.querySelectorAll('.drawer-hdr').forEach(function(hdr) {
+      hdr.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          window.toggleSection(hdr.parentElement);
+        }
+      });
+    });
+  }
+
+  /* ════════════════════════════════════════════════
+     RATE DISPLAY
+     ════════════════════════════════════════════════ */
+
   function updateRateDisplay() {
     var stateSelect = document.querySelector('select[name="state"]');
     if (!stateSelect) return;
@@ -54,13 +131,42 @@
     var insEl = document.getElementById('insuranceRateDisplay');
     if (!taxEl || !insEl) return;
 
-    taxEl.textContent = rates.tax.toFixed(1) + '%';
-    // Determine property type from hidden input
+    taxEl.textContent = rates.tax.toFixed(2) + '%';
     var typeInput = document.querySelector('input[name="property_type"]');
     var isCommercial = typeInput && typeInput.value === 'Commercial';
     var insRate = isCommercial ? rates.insurance_comm : rates.insurance_resi;
-    insEl.textContent = insRate.toFixed(1) + '%';
+    insEl.textContent = insRate.toFixed(2) + '%';
   }
+
+  /* ════════════════════════════════════════════════
+     DOWN PAYMENT LIVE UPDATE
+     ════════════════════════════════════════════════ */
+
+  function updateDownPayment() {
+    var ppInput = document.querySelector('input[name="purchase_price"]');
+    var dpInput = document.querySelector('input[name="down_payment_pct"]');
+    var downEl = document.querySelector('.down-amount');
+    if (!ppInput || !dpInput || !downEl) return;
+
+    var pp = parseInt((ppInput.dataset.raw || ppInput.value).replace(/[^0-9]/g, ''), 10) || 0;
+    var pct = parseFloat(dpInput.value) || 0;
+    var amt = Math.round(pp * pct / 100);
+
+    downEl.textContent = '$' + amt.toLocaleString('en-US');
+    downEl.className = 'down-amount ' + (amt <= 500000 ? 'up' : amt <= 750000 ? 'caution' : 'down');
+  }
+
+  /* Listen for input changes on price and down payment */
+  document.addEventListener('input', function(e) {
+    if (e.target && (e.target.name === 'purchase_price' || e.target.name === 'down_payment_pct')) {
+      updateDownPayment();
+    }
+  });
+  document.addEventListener('change', function(e) {
+    if (e.target && (e.target.name === 'purchase_price' || e.target.name === 'down_payment_pct')) {
+      updateDownPayment();
+    }
+  });
 
   /* Listen for state changes */
   document.addEventListener('change', function(e) {
@@ -69,15 +175,24 @@
     }
   });
 
-  /* Re-init after HTMX sidebar swaps */
+  /* Re-init after HTMX swaps */
   document.body.addEventListener('htmx:afterSwap', function(e) {
     if (e.detail.target && e.detail.target.id === 'sidebar-form') {
       initCurrencyFormatting();
       updateRateDisplay();
+      updateDownPayment();
+    }
+    if (e.detail.target && e.detail.target.id === 'results') {
+      /* Re-apply collapse state and keyboard bindings after results swap */
+      initCollapseState();
+      bindDrawerKeyboard();
     }
   });
 
-  /* Currency formatting for numeric inputs */
+  /* ════════════════════════════════════════════════
+     CURRENCY FORMATTING
+     ════════════════════════════════════════════════ */
+
   function formatCurrency(val) {
     var n = parseInt(String(val).replace(/[^0-9]/g, ''), 10);
     if (isNaN(n)) return '$0';

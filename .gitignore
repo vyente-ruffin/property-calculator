@@ -1,3 +1,4 @@
+.logs/
 archive/
 venv/
 __pycache__/

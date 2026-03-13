@@ -55,13 +55,13 @@ def map_property_to_input(data: dict) -> CalculatorInput:
     if noi is not None:
         fields["annual_noi_listing"] = noi
 
-    gross_rents = _parse_currency(data.get("Annual Rent Income (Projected)"))
+    actual_gross = _parse_currency(data.get("Annual Rent Income (Actual)"))
+    gross_rents = actual_gross if actual_gross is not None else _parse_currency(data.get("Annual Rent Income (Projected)"))
     if gross_rents is not None:
         fields["annual_gross_rents"] = gross_rents
 
-    monthly_rent = _parse_currency(
-        data.get("Monthly Rental Income (Projected)")
-    )
+    actual_monthly = _parse_currency(data.get("Monthly Rental Income (Actual)"))
+    monthly_rent = actual_monthly if actual_monthly is not None else _parse_currency(data.get("Monthly Rental Income (Projected)"))
     if monthly_rent is not None:
         fields["monthly_rent"] = monthly_rent
 

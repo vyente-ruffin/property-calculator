@@ -1,10 +1,8 @@
-import sys
-from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
-sys.path.insert(0, str(Path.home() / ".ai" / "logging"))
-from logger import setup_logging, get_logger
+from src.core.logger import get_logger
 
-setup_logging(project="property-calculator")
 log = get_logger("server")
 
 import uvicorn
@@ -79,16 +77,13 @@ async def index(request: Request):
             context["r"] = result
             context["v"] = verdict
             context["inp"] = inp
-            log.info("calculation_rendered",
-                      property_type=inp.property_type,
-                      purchase_price=str(inp.purchase_price),
-                      state=inp.state,
-                      verdict=verdict.verdict)
+            log.info("calculation_rendered type=%s price=%s state=%s verdict=%s",
+                      inp.property_type, inp.purchase_price, inp.state, verdict.verdict)
         except Exception as e:
-            log.error("calculation_failed", error=str(e))
+            log.error("calculation_failed: %s", str(e))
 
     return templates.TemplateResponse(request, "index.html", context=context)
 
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=8090, reload=True)
+    uvicorn.run("server:app", host="0.0.0.0", port=9173, reload=True)

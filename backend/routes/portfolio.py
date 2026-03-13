@@ -1,10 +1,6 @@
 """Portfolio routes — save and view parsed properties."""
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path.home() / ".ai" / "logging"))
-from logger import get_logger
+from src.core.logger import get_logger
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -35,7 +31,7 @@ async def save_to_portfolio(req: PortfolioSaveRequest):
 
 @router.post("/api/log")
 async def log_frontend_event(req: LogEvent):
-    log.info(req.event, **req.data)
+    log.info("%s %s", req.event, req.data)
     return JSONResponse({"status": "ok"})
 
 

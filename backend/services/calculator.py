@@ -33,6 +33,8 @@ def _monthly_payment(loan_amount: Decimal, annual_rate: Decimal, years: int) -> 
     r = float(annual_rate / _HUNDRED) / 12
     n = years * 12
     principal = float(loan_amount)
+    if r == 0:
+        return Decimal(str(principal / n)).quantize(_Q2, rounding=ROUND_HALF_UP)
     factor = (1 + r) ** n
     payment = principal * (r * factor) / (factor - 1)
     return Decimal(str(payment)).quantize(_Q2, rounding=ROUND_HALF_UP)
@@ -52,7 +54,7 @@ def calculate_commercial(inp: CalculatorInput) -> CalculationResult:
     gross = inp.annual_gross_rents or Decimal("0")
     vacancy = (inp.vacancy_rate or Decimal("0")) / _HUNDRED
     other_exp = inp.other_expenses or Decimal("0")
-    noi_listing_val = inp.annual_noi_listing or Decimal("0")
+    noi_listing_val = inp.annual_noi_listing if inp.annual_noi_listing is not None else Decimal("0")
 
     # Loan basics
     amount_down = (purchase * down_pct).quantize(_Q2, rounding=ROUND_HALF_UP)

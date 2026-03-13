@@ -2,15 +2,18 @@
 
 import re
 import sqlite3
-import sys
+from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
-sys.path.insert(0, str(Path.home() / ".ai" / "logging"))
-from logger import get_logger
+from src.core.logger import get_logger
 
 log = get_logger("portfolio")
 
 DB_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "portfolio.db"
+
+_TZ_PACIFIC = ZoneInfo("America/Los_Angeles")
 
 _CREATE_TABLE = """
 CREATE TABLE IF NOT EXISTS properties (
@@ -28,9 +31,25 @@ CREATE TABLE IF NOT EXISTS properties (
     date_on_market TEXT,
     property_url TEXT,
     description TEXT,
-    parsed_at TEXT DEFAULT (strftime('%m/%d/%Y %I:%M %p', 'now', '-8 hours'))
+    parsed_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%S', 'now'))
 );
 """
+
+
+def _now_pacific() -> str:
+    """ISO 8601 timestamp in America/Los_Angeles (handles PST/PDT)."""
+    return datetime.now(_TZ_PACIFIC).strftime("%Y-%m-%dT%H:%M:%S")
+
+
+def _format_display_ts(iso_ts: str | None) -> str:
+    """Convert ISO 8601 timestamp to MM/DD/YYYY hh:MM AM/PM for display."""
+    if not iso_ts:
+        return "--"
+    try:
+        dt = datetime.fromisoformat(iso_ts)
+        return dt.strftime("%m/%d/%Y %I:%M %p")
+    except (ValueError, TypeError):
+        return iso_ts  # already in display format (legacy data)
 
 
 def _get_conn() -> sqlite3.Connection:
@@ -44,10 +63,12 @@ def _get_conn() -> sqlite3.Connection:
 def _parse_int(val) -> int | None:
     if val is None:
         return None
-    s = str(val).replace("$", "").replace(",", "").replace(".00", "").strip()
+    cleaned = str(val).replace("$", "").replace(",", "").strip()
+    if not cleaned:
+        return None
     try:
-        return int(float(s))
-    except (ValueError, TypeError):
+        return int(Decimal(cleaned))
+    except (InvalidOperation, ValueError, TypeError):
         return None
 
 
@@ -64,7 +85,7 @@ def save_property(data: dict) -> int:
         city = data.get("City") or data.get("city") or ""
         state = data.get("state", "")
         if not state and city:
-            m = re.search(r',\s*([A-Z]{2})\s', city)
+            m = re.search(r',\s*([A-Z]{2})(?:\s|$)', city)
             if m:
                 state = m.group(1)
 
@@ -102,13 +123,14 @@ def save_property(data: dict) -> int:
                     pid = ex["id"]
                     sets = ", ".join(f"{k} = ?" for k in row.keys())
                     conn.execute(
-                        f"UPDATE properties SET {sets}, parsed_at = strftime('%m/%d/%Y %I:%M %p', 'now', '-8 hours') WHERE id = ?",
-                        list(row.values()) + [pid],
+                        f"UPDATE properties SET {sets}, parsed_at = ? WHERE id = ?",
+                        list(row.values()) + [_now_pacific(), pid],
                     )
                     conn.commit()
-                    log.info("property_updated", id=pid, address=address, price=row["price"])
+                    log.info("property_updated id=%s address=%s price=%s", pid, address, row["price"])
                     return pid
 
+        row["parsed_at"] = _now_pacific()
         cols = ", ".join(row.keys())
         placeholders = ", ".join(["?"] * len(row))
         cur = conn.execute(
@@ -117,7 +139,7 @@ def save_property(data: dict) -> int:
         )
         conn.commit()
         pid = cur.lastrowid
-        log.info("property_saved", id=pid, address=address, price=row["price"])
+        log.info("property_saved id=%s address=%s price=%s", pid, address, row["price"])
         return pid
     finally:
         conn.close()
@@ -129,7 +151,12 @@ def get_all_properties() -> list[dict]:
         rows = conn.execute(
             "SELECT * FROM properties ORDER BY parsed_at DESC"
         ).fetchall()
-        return [dict(r) for r in rows]
+        results = []
+        for r in rows:
+            d = dict(r)
+            d["parsed_at"] = _format_display_ts(d.get("parsed_at"))
+            results.append(d)
+        return results
     finally:
         conn.close()
 
