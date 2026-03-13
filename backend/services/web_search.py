@@ -1,9 +1,10 @@
-import logging
 import re
+
+from src.core.logger import get_logger
 
 import httpx
 
-logger = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 DUCKDUCKGO_HTML_URL = "https://html.duckduckgo.com/html/"
 
@@ -55,6 +56,6 @@ async def search_listing_url(address: str, city: str | None = None) -> str | Non
                     return url
 
     except httpx.HTTPError as e:
-        logger.error(f"Web search failed: {e}")
+        log.error(f"Web search failed: {e}")
 
     return None

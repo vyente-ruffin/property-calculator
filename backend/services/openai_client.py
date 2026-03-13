@@ -1,12 +1,13 @@
 import json
-import logging
+
+from src.core.logger import get_logger
 
 from openai import AzureOpenAI
 
 from backend.config import settings
 from backend.schemas.property import PROPERTY_JSON_SCHEMA
 
-logger = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 SYSTEM_PROMPT = """You are a strict parser for multifamily property listings.
 
@@ -37,11 +38,13 @@ NEVER fabricate values. If you cannot determine a field from the text, set it to
 ENRICHMENT_PROMPT = """You are re-extracting property data with additional context.
 
 The first pass extracted some fields. You now have enrichment data:
-- Rentcast projected rent estimates (if provided)
+- Rentcast rent estimates (if provided)
 - A listing URL (if found)
 
 Merge the enrichment data with the original extraction. Rules:
-- If Rentcast provided projected rent and the first pass had null for projected rent, use the Rentcast values.
+- RENTCAST DATA = actual market rents for the area. Place Rentcast values into
+  Monthly Rental Income (Actual) and Annual Rent Income (Actual), NOT Projected.
+  Keep any listing-provided Projected rents unchanged.
 - If a listing URL was found and the first pass had null for Link, use the found URL.
 - Keep all other fields from the first pass unless the enrichment data provides a clearly better value.
 - All the same normalization rules apply."""
@@ -96,8 +99,9 @@ def enrich_and_reextract(
     enrichment_parts = [f"FIRST PASS RESULT:\n{json.dumps(first_pass, indent=2)}"]
 
     if rentcast_data:
+        # Label matches the prompt instruction: Rentcast = actual market rents
         enrichment_parts.append(
-            f"RENTCAST PROJECTED RENT DATA:\n{json.dumps(rentcast_data, indent=2)}"
+            f"RENTCAST MARKET RENT DATA:\n{json.dumps(rentcast_data, indent=2)}"
         )
 
     if found_url:

@@ -39,8 +39,14 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      # NOTE: The following App Settings must be configured in Azure Portal
+      # (Settings > Environment variables) — do NOT store these in the workflow:
+      #   - GOOGLE_SERVICE_ACCOUNT  (JSON string of the service account key)
+      #   - GOOGLE_SHEET_ID         (ID of the Google Sheet for portfolio data)
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           package: .
+          startup-command: 'uvicorn server:app --host 0.0.0.0 --port 8000'

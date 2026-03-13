@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>405 Network — Property Analyzer (Compact)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DESIGN SYSTEM — Private Equity Command Deck
+       ============================================ */
+    :root {
+      --midnight:     #06090f;
+      --void:         #0b0f1a;
+      --surface:      #111827;
+      --surface-2:    #1a2234;
+      --surface-3:    #212d42;
+      --border:       #1e293b;
+      --border-light: #2a3a52;
+
+      --gold:         #d4a853;
+      --gold-dim:     #a67c3b;
+      --gold-glow:    rgba(212, 168, 83, 0.08);
+      --gold-border:  rgba(212, 168, 83, 0.15);
+
+      --up:           #34d399;
+      --up-bg:        rgba(52, 211, 153, 0.08);
+      --up-border:    rgba(52, 211, 153, 0.2);
+      --caution:      #fbbf24;
+      --caution-bg:   rgba(251, 191, 36, 0.08);
+      --caution-border: rgba(251, 191, 36, 0.2);
+      --down:         #f87171;
+      --down-bg:      rgba(248, 113, 113, 0.06);
+      --down-border:  rgba(248, 113, 113, 0.2);
+
+      --text:         #e2e8f0;
+      --text-2:       #94a3b8;
+      --text-3:       #64748b;
+      --text-white:   #f8fafc;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--midnight);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 400;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 80px 80px;
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== LAYOUT ===== */
+    .app { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
+
+    /* ===== HEADER (44px) ===== */
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      height: 44px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-mark {
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      border-radius: 5px;
+      display: grid;
+      place-items: center;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--midnight);
+    }
+    .brand-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-white);
+      letter-spacing: -0.3px;
+    }
+    .brand-name span { color: var(--gold); }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .chat-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-2);
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chat-toggle-btn:hover { border-color: var(--gold-border); color: var(--text); }
+    .chat-toggle-btn.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      color: var(--midnight);
+      border-color: var(--gold);
+    }
+    .header-tag {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .theme-toggle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-3);
+      font-size: 14px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--border-light); color: var(--text); }
+    .header-dot {
+      width: 7px; height: 7px;
+      background: var(--up);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--up);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ===== WORKSPACE ===== */
+    .workspace { display: flex; flex: 1; overflow: hidden; }
+
+    /* ===== CHAT PANEL (collapsible) ===== */
+    .chat-panel {
+      width: 0;
+      min-width: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--void);
+      transition: width 0.3s ease, min-width 0.3s ease, border 0.3s ease;
+      border-right: 0px solid var(--border);
+      flex-shrink: 0;
+    }
+    .chat-panel.open {
+      width: 380px;
+      min-width: 380px;
+      border-right: 1px solid var(--border);
+    }
+    .chat-inner {
+      width: 380px;
+      min-width: 380px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .chat-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .chat-header-icon {
+      width: 20px; height: 20px;
+      background: var(--gold-glow);
+      border: 1px solid var(--gold-border);
+      border-radius: 5px;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+    }
+    .chat-header-text {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+    .chat-close {
+      margin-left: auto;
+      width: 24px; height: 24px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: transparent;
+      color: var(--text-3);
+      font-size: 12px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.15s;
+    }
+    .chat-close:hover { background: var(--surface); color: var(--text); border-color: var(--border-light); }
+
+    .chat-feed { flex: 1; overflow-y: auto; padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-feed::-webkit-scrollbar { width: 4px; }
+    .chat-feed::-webkit-scrollbar-track { background: transparent; }
+    .chat-feed::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+
+    .msg { max-width: 92%; animation: msgIn 0.3s ease-out both; }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg.user { align-self: flex-end; }
+    .msg.system { align-self: flex-start; }
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .msg.user .msg-bubble {
+      background: linear-gradient(135deg, var(--surface-3), var(--surface-2));
+      border: 1px solid var(--border-light);
+      border-bottom-right-radius: 4px;
+      color: var(--text);
+    }
+    .msg.system .msg-bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+    .msg-label {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      color: var(--text-3);
+    }
+    .msg.user .msg-label { text-align: right; }
+
+    /* Pipeline */
+    .pipeline {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .pipeline-toggle {
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+      transition: background 0.15s;
+    }
+    .pipeline-toggle:hover { background: var(--surface-2); }
+    .pipeline-toggle .check { color: var(--up); }
+    .pipeline-toggle .chevron {
+      margin-left: auto;
+      font-size: 10px;
+      transition: transform 0.2s;
+      color: var(--text-3);
+    }
+    .pipeline.open .chevron { transform: rotate(180deg); }
+    .pipeline-steps { display: none; padding: 0 14px 10px; }
+    .pipeline.open .pipeline-steps { display: block; }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+      font-size: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-status { width: 16px; text-align: center; font-size: 12px; }
+    .step-name { font-weight: 500; color: var(--text); min-width: 90px; }
+    .step-detail { color: var(--text-3); font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+    .step.done .step-name { color: var(--up); }
+    .step.skip { opacity: 0.4; }
+
+    /* Extracted data */
+    .extract-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2px 12px;
+      margin-top: 8px;
+    }
+    .extract-key {
+      font-size: 11px;
+      color: var(--text-3);
+      padding: 2px 0;
+      white-space: nowrap;
+    }
+    .extract-val {
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      color: var(--text-white);
+      padding: 2px 0;
+    }
+    .extract-populated {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 500;
+    }
+    .extract-populated::before {
+      content: '';
+      width: 5px; height: 5px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    /* Chat compose */
+    .chat-compose {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--void);
+      flex-shrink: 0;
+    }
+    .compose-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .compose-box:focus-within { border-color: var(--gold-dim); }
+    .compose-box textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      padding: 10px 12px 4px;
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+    }
+    .compose-box textarea::placeholder { color: var(--text-3); }
+    .compose-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding: 4px 8px 8px;
+      gap: 6px;
+    }
+    .btn-parse {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      color: var(--midnight);
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-parse:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-3);
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    /* ===== CALCULATOR PANEL ===== */
+    .calc-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--midnight);
+      min-width: 0;
+    }
+
+    /* ===== INPUT STRIP ===== */
+    .input-strip {
+      background: var(--void);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 24px 10px;
+      flex-shrink: 0;
+    }
+    .input-strip-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .type-pill {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .type-pill button {
+      padding: 5px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-3);
+      font-family: 'Outfit', sans-serif;
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .type-pill button.active {
+      background: var(--gold);
+      color: var(--midnight);
+      font-weight: 600;
+    }
+    .deal-label {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-white);
+      letter-spacing: -0.2px;
+    }
+    .strip-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .down-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 5px;
+    }
+    .down-badge.caution {
+      color: var(--caution);
+      background: var(--caution-bg);
+      border: 1px solid var(--caution-border);
+    }
+    .down-badge.down {
+      color: var(--down);
+      background: var(--down-bg);
+      border: 1px solid var(--down-border);
+    }
+    .strip-info {
+      font-size: 11px;
+      color: var(--text-3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Compact input cells */
+    .fields-row {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .fields-row.four { grid-template-columns: repeat(4, 1fr); }
+    .fields-row.five { grid-template-columns: repeat(4, 1fr) 120px; }
+    .fields-row.two { grid-template-columns: 1fr 1fr; }
+    .fields-row.two-slider { grid-template-columns: 1fr 1fr; }
+    .fields-row.url { grid-template-columns: 1fr auto; }
+
+    .cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px 5px;
+      transition: border-color 0.2s;
+    }
+    .cell:focus-within { border-color: var(--gold-dim); }
+    .cell-label {
+      font-size: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-3);
+      margin-bottom: 1px;
+    }
+    .cell input, .cell select {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-white);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      padding: 0;
+    }
+    .cell select {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text);
+      -webkit-appearance: none;
+    }
+
+    /* Slider cells */
+    .slider-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px 6px;
+    }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+    }
+    .slider-label {
+      font-size: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-3);
+    }
+    .slider-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--gold);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(212,168,83,0.3);
+      transition: transform 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    .url-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px 5px;
+      display: flex;
+      flex-direction: column;
+    }
+    .url-cell input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      padding: 0;
+    }
+    .view-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 500;
+      padding: 3px 10px;
+      border: 1px solid var(--gold-border);
+      border-radius: 5px;
+      background: var(--gold-glow);
+      align-self: center;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .view-link:hover { background: rgba(212,168,83,0.15); }
+
+    /* ===== ADDRESS BAR ===== */
+    .address-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .address-bar a {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: -0.3px;
+      transition: color 0.15s;
+    }
+    .address-bar a:hover { color: var(--gold-dim); text-decoration: underline; }
+
+    /* ===== RESULTS SCROLL ===== */
+    .calc-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px 32px;
+    }
+    .calc-scroll::-webkit-scrollbar { width: 5px; }
+    .calc-scroll::-webkit-scrollbar-track { background: transparent; }
+    .calc-scroll::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+
+    /* ===== VERDICT ===== */
+    .verdict {
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      position: relative;
+      overflow: hidden;
+      animation: verdictIn 0.5s ease-out both;
+    }
+    @keyframes verdictIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .verdict.pass {
+      background: var(--down-bg);
+      border: 1px solid var(--down-border);
+    }
+    .verdict.invest {
+      background: var(--up-bg);
+      border: 1px solid var(--up-border);
+    }
+    .verdict.review {
+      background: var(--caution-bg);
+      border: 1px solid var(--caution-border);
+    }
+    .verdict::before {
+      content: '';
+      position: absolute;
+      top: -40px; left: -40px;
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.15;
+    }
+    .verdict.pass::before { background: var(--down); }
+    .verdict.invest::before { background: var(--up); }
+    .verdict.review::before { background: var(--caution); }
+    .verdict-icon { font-size: 28px; position: relative; z-index: 1; }
+    .verdict-body { position: relative; z-index: 1; }
+    .verdict-label {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .verdict.pass .verdict-label { color: var(--down); }
+    .verdict.invest .verdict-label { color: var(--up); }
+    .verdict.review .verdict-label { color: var(--caution); }
+    .verdict-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text-white);
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+    .verdict-reasons {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .verdict-reasons li {
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.5;
+      padding-left: 14px;
+      position: relative;
+    }
+    .verdict-reasons li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--text-3);
+    }
+
+    /* ===== METRIC CARDS ===== */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.15s;
+      animation: metricIn 0.4s ease-out both;
+    }
+    .metric:nth-child(1) { animation-delay: 0.05s; }
+    .metric:nth-child(2) { animation-delay: 0.1s; }
+    .metric:nth-child(3) { animation-delay: 0.15s; }
+    .metric:nth-child(4) { animation-delay: 0.2s; }
+    @keyframes metricIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .metric:hover { transform: translateY(-2px); }
+    .metric::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .metric.up { border-color: var(--up-border); }
+    .metric.up::after { background: var(--up); }
+    .metric.caution { border-color: var(--caution-border); }
+    .metric.caution::after { background: var(--caution); }
+    .metric.down { border-color: var(--down-border); }
+    .metric.down::after { background: var(--down); }
+    .metric-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .metric-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    .metric.up .metric-num { color: var(--up); }
+    .metric.caution .metric-num { color: var(--caution); }
+    .metric.down .metric-num { color: var(--down); }
+    .metric-sub {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    /* ===== NOI COMPARE ===== */
+    .noi-section { margin-bottom: 20px; }
+    .noi-grid {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      gap: 0;
+      align-items: stretch;
+    }
+    .noi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 14px;
+      text-align: center;
+    }
+    .noi-card-label {
+      font-size: 10px;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    .noi-card-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-white);
+    }
+    .noi-delta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .noi-delta-arrow { font-size: 18px; color: var(--down); }
+    .noi-delta-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--down);
+    }
+    .noi-delta-text {
+      font-size: 9px;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== SECTION HEADERS ===== */
+    .sec-header {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ===== TABLES ===== */
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+    .tbl thead th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 7px 12px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .tbl thead th:not(:first-child) { text-align: right; }
+    .tbl tbody td {
+      padding: 8px 12px;
+      font-size: 12.5px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .tbl tbody td:not(:first-child) {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      font-size: 12px;
+    }
+    .tbl tbody tr:last-child td { border-bottom: none; }
+    .tbl .row-total td {
+      font-weight: 700;
+      border-top: 1px solid var(--border);
+      color: var(--text-white);
+    }
+    .tbl-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    /* ===== COLLAPSIBLE ===== */
+    .collapse-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 10px;
+      transition: background 0.15s;
+    }
+    .collapse-trigger:hover { background: var(--surface-2); }
+    .collapse-body {
+      display: none;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 7px 7px;
+      font-size: 11.5px;
+      color: var(--text-3);
+      line-height: 1.8;
+      margin-top: -11px;
+      margin-bottom: 10px;
+    }
+    .collapse-trigger.open { border-radius: 7px 7px 0 0; }
+    .collapse-trigger.open + .collapse-body { display: block; }
+
+    /* ===== TOTAL METRIC DISPLAY ===== */
+    .total-metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .total-metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-3);
+    }
+    .total-metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-white);
+    }
+
+    /* ===== DEAL BANNER ===== */
+    .deal-banner {
+      border-radius: 9px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .deal-banner.bad {
+      background: var(--down-bg);
+      border: 1px solid var(--down-border);
+      color: var(--down);
+    }
+    .deal-banner.good {
+      background: var(--up-bg);
+      border: 1px solid var(--up-border);
+      color: var(--up);
+    }
+
+    /* ===== SUMMARY GRID ===== */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+    }
+    .summary-row .sr-label {
+      font-size: 11.5px;
+      color: var(--text-3);
+    }
+    .summary-row .sr-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-white);
+    }
+    .sr-delta {
+      font-size: 10px;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    /* ===== BOTTOM BAR ===== */
+    .bottom-bar {
+      padding: 10px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .btn {
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+      letter-spacing: -0.2px;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      color: var(--midnight);
+    }
+    .btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--border) !important;
+    }
+    .btn-outline:hover { border-color: var(--border-light) !important; color: var(--text); background: var(--surface); }
+    .bar-spacer { flex: 1; }
+    .bar-status {
+      font-size: 11px;
+      color: var(--text-3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ===== CHART PLACEHOLDER ===== */
+    .chart-placeholder {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 32px;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    /* ===== CSS BAR CHART ===== */
+    .bar-chart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .bar-row:last-child { margin-bottom: 0; }
+    .bar-label {
+      font-size: 10px;
+      color: var(--text-3);
+      width: 40px;
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .bar-track {
+      flex: 1;
+      height: 14px;
+      background: var(--void);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+    .bar-fill.gold { background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
+    .bar-fill.green { background: linear-gradient(90deg, rgba(52,211,153,0.4), var(--up)); }
+    .bar-val {
+      font-size: 10px;
+      color: var(--text-2);
+      width: 60px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ===== UTILITY ===== */
+    .text-up { color: var(--up) !important; }
+    .text-caution { color: var(--caution) !important; }
+    .text-down { color: var(--down) !important; }
+    .text-gold { color: var(--gold) !important; }
+    .fw-700 { font-weight: 700 !important; }
+    .mb-16 { margin-bottom: 16px; }
+    .mb-20 { margin-bottom: 20px; }
+
+    .calc-view { display: flex; flex-direction: column; height: 100%; }
+    .calc-view[style*="display: none"] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-mark">4N</div>
+        <div class="brand-name"><span>405</span> Network</div>
+      </div>
+      <div class="header-right">
+        <button class="chat-toggle-btn active" id="chatToggle" onclick="toggleChat()">⚡ Parser</button>
+        <span class="header-tag">Property Analyzer</span>
+        <button class="theme-toggle">◐</button>
+        <div class="header-dot"></div>
+      </div>
+    </header>
+
+    <div class="workspace">
+
+      <!-- ===== CHAT PANEL ===== -->
+      <div class="chat-panel open" id="chatPanel">
+        <div class="chat-inner">
+          <div class="chat-header">
+            <div class="chat-header-icon">⚡</div>
+            <div class="chat-header-text">Listing Parser</div>
+            <button class="chat-close" onclick="toggleChat()">✕</button>
+          </div>
+
+          <div class="chat-feed">
+            <!-- Welcome -->
+            <div class="msg system">
+              <div class="msg-bubble">
+                Paste a property listing — raw text or URL — and I'll extract the data and run the investment analysis.
+              </div>
+            </div>
+
+            <!-- User paste -->
+            <div class="msg user">
+              <div class="msg-label">You</div>
+              <div class="msg-bubble" style="white-space:pre-line; font-size:12px; font-family:'JetBrains Mono',monospace; line-height:1.7;">252 W 11th St, San Pedro, CA 90731
+
+8-Unit Multifamily · $1,970,000
+Cap Rate: 5.46% · Built 1963 · 5,876 SF
+
+Unit Mix:
+2x 3BD/2BA @ $2,100/mo
+4x 2BD/1BA @ $1,650/mo
+2x 1BD/1BA @ $1,300/mo
+
+Gross Scheduled Income: $152,195/yr
+NOI: $106,548 · Vacancy: 3%</div>
+            </div>
+
+            <!-- Pipeline -->
+            <div class="msg system">
+              <div class="pipeline" id="pipeline">
+                <div class="pipeline-toggle" onclick="document.getElementById('pipeline').classList.toggle('open')">
+                  <span class="check">✓</span>
+                  <span>Analyzed — 7/7 steps complete</span>
+                  <span class="chevron">▾</span>
+                </div>
+                <div class="pipeline-steps">
+                  <div class="step done"><span class="step-status">✓</span><span class="step-name">Parse Input</span><span class="step-detail">2,847 chars</span></div>
+                  <div class="step skip"><span class="step-status">⏭</span><span class="step-name">Scrape URL</span><span class="step-detail">skipped</span></div>
+                  <div class="step done"><span class="step-status">✓</span><span class="step-name">Extract Fields</span><span class="step-detail">15/15</span></div>
+                  <div class="step done"><span class="step-status">✓</span><span class="step-name">Search Link</span><span class="step-detail">found</span></div>
+                  <div class="step done"><span class="step-status">✓</span><span class="step-name">Rentcast</span><span class="step-detail">$14,200/mo</span></div>
+                  <div class="step done"><span class="step-status">✓</span><span class="step-name">Re-extract</span><span class="step-detail">merged</span></div>
+                  <div class="step done"><span class="step-status">✓</span><span class="step-name">Validate</span><span class="step-detail">pass</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Extracted data -->
+            <div class="msg system">
+              <div class="msg-bubble">
+                <strong style="color:var(--text-white); font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Extracted Data</strong>
+                <div class="extract-grid">
+                  <span class="extract-key">Price</span><span class="extract-val">$1,970,000</span>
+                  <span class="extract-key">Address</span><span class="extract-val">252 W 11th St</span>
+                  <span class="extract-key">City</span><span class="extract-val">San Pedro, CA 90731</span>
+                  <span class="extract-key">Units</span><span class="extract-val">8</span>
+                  <span class="extract-key">Cap Rate</span><span class="extract-val">5.46%</span>
+                  <span class="extract-key">Gross Rents</span><span class="extract-val">$152,195/yr</span>
+                  <span class="extract-key">NOI</span><span class="extract-val">$106,548</span>
+                  <span class="extract-key">Projected</span><span class="extract-val">$14,200/mo</span>
+                  <span class="extract-key">Unit Mix</span><span class="extract-val" style="font-size:10.5px;">2×3/2 · 4×2/1 · 2×1/1</span>
+                  <span class="extract-key">Size</span><span class="extract-val">5,876 SF</span>
+                </div>
+                <div class="extract-populated">Calculator populated with extracted data</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compose -->
+          <div class="chat-compose">
+            <div class="compose-box">
+              <textarea rows="2" placeholder="Paste listing text or URL..."></textarea>
+              <div class="compose-actions">
+                <button class="btn-ghost">Clear</button>
+                <button class="btn-parse">Parse Listing</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CALCULATOR PANEL ===== -->
+      <div class="calc-panel">
+
+        <!-- ============ COMMERCIAL ============ -->
+        <div class="calc-view" id="commercial" style="display:flex;">
+
+          <!-- Input Strip -->
+          <div class="input-strip">
+            <div class="input-strip-top">
+              <div class="type-pill">
+                <button onclick="showCalc('residential')">Residential</button>
+                <button class="active" onclick="showCalc('commercial')">Commercial</button>
+              </div>
+              <span class="deal-label">Commercial Deal</span>
+              <div class="strip-right">
+                <span class="down-badge caution">↓ $591,000</span>
+                <span class="strip-info">Tax 1.25% · Ins 1.25%</span>
+              </div>
+            </div>
+            <!-- Row 1: 4 input cells -->
+            <div class="fields-row four">
+              <div class="cell">
+                <div class="cell-label">Purchase Price</div>
+                <input type="text" value="$1,970,000">
+              </div>
+              <div class="cell">
+                <div class="cell-label">Gross Rents (Annual)</div>
+                <input type="text" value="$152,195">
+              </div>
+              <div class="cell">
+                <div class="cell-label">NOI from Listing</div>
+                <input type="text" value="$106,548">
+              </div>
+              <div class="cell">
+                <div class="cell-label">Other Expenses</div>
+                <input type="text" value="$5,000">
+              </div>
+            </div>
+            <!-- Row 2: 4 sliders + state dropdown -->
+            <div class="fields-row five">
+              <div class="slider-cell">
+                <div class="slider-header">
+                  <span class="slider-label">Down Payment</span>
+                  <span class="slider-val" id="c-dp-val">30%</span>
+                </div>
+                <input type="range" min="0" max="100" value="30" oninput="document.getElementById('c-dp-val').textContent=this.value+'%'">
+              </div>
+              <div class="slider-cell">
+                <div class="slider-header">
+                  <span class="slider-label">Vacancy</span>
+                  <span class="slider-val" id="c-vr-val">3%</span>
+                </div>
+                <input type="range" min="0" max="50" value="3" oninput="document.getElementById('c-vr-val').textContent=this.value+'%'">
+              </div>
+              <div class="slider-cell">
+                <div class="slider-header">
+                  <span class="slider-label">Interest Rate</span>
+                  <span class="slider-val" id="c-ir-val">6.5%</span>
+                </div>
+                <input type="range" min="0" max="20" value="6.5" step="0.1" oninput="document.getElementById('c-ir-val').textContent=this.value+'%'">
+              </div>
+              <div class="slider-cell">
+                <div class="slider-header">
+                  <span class="slider-label">Loan Term</span>
+                  <span class="slider-val" id="c-lt-val">25 yrs</span>
+                </div>
+                <input type="range" min="1" max="30" value="25" oninput="document.getElementById('c-lt-val').textContent=this.value+' yrs'">
+              </div>
+              <div class="cell">
+                <div class="cell-label">State</div>
+                <select>
+                  <option>Arizona</option>
+                  <option selected>California</option>
+                  <option>Indiana</option>
+                  <option>Nevada</option>
+                  <option>Texas</option>
+                  <option>Michigan</option>
+                </select>
+              </div>
+            </div>
+            <!-- Row 3: URL -->
+            <div class="fields-row url">
+              <div class="url-cell">
+                <div class="cell-label">Property URL</div>
+                <input type="text" value="https://www.redfin.com/CA/San-Pedro/252-W-11th-St" placeholder="https://...">
+              </div>
+              <a href="#" class="view-link">View Listing ↗</a>
+            </div>
+          </div>
+
+          <!-- Address Bar -->
+          <div class="address-bar">
+            <a href="#">252 W 11th St, San Pedro, CA 90731</a>
+          </div>
+
+          <!-- Results -->
+          <div class="calc-scroll">
+
+            <!-- Verdict -->
+            <div class="verdict pass">
+              <div class="verdict-icon">❌</div>
+              <div class="verdict-body">
+                <div class="verdict-label">Pass</div>
+                <div class="verdict-title">Negative Cash Flow — Do Not Proceed</div>
+                <ul class="verdict-reasons">
+                  <li>Annual cash flow is -$24,442, meaning you lose money every month</li>
+                  <li>DSCR 0.78× is far below the 1.25× lender threshold</li>
+                  <li>Cash-on-Cash -3.8% — negative return on invested capital</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- 4 Metric Cards -->
+            <div class="metrics-row">
+              <div class="metric caution">
+                <div class="metric-label">Cap Rate</div>
+                <div class="metric-num">4.4%</div>
+                <div class="metric-sub">Below 5% target</div>
+              </div>
+              <div class="metric down">
+                <div class="metric-label">Cash-on-Cash</div>
+                <div class="metric-num">-3.8%</div>
+                <div class="metric-sub">Negative ROI</div>
+              </div>
+              <div class="metric down">
+                <div class="metric-label">DSCR</div>
+                <div class="metric-num">0.78×</div>
+                <div class="metric-sub">Below 1.25×</div>
+              </div>
+              <div class="metric up">
+                <div class="metric-label">Est. NOI</div>
+                <div class="metric-num">$87K</div>
+                <div class="metric-sub">Positive</div>
+              </div>
+            </div>
+
+            <!-- NOI Comparison -->
+            <div class="noi-section">
+              <div class="sec-header">NOI Comparison</div>
+              <div class="noi-grid">
+                <div class="noi-card">
+                  <div class="noi-card-label">Broker NOI</div>
+                  <div class="noi-card-val">$106,548</div>
+                </div>
+                <div class="noi-delta">
+                  <div class="noi-delta-arrow">⟶</div>
+                  <div class="noi-delta-val">−18.1%</div>
+                  <div class="noi-delta-text">Delta</div>
+                </div>
+                <div class="noi-card">
+                  <div class="noi-card-label">Estimated NOI</div>
+                  <div class="noi-card-val">$87,291</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Operating Expenses -->
+            <div class="sec-header">Operating Expenses</div>
+            <div class="tbl-container">
+              <table class="tbl">
+                <thead><tr><th>Expense</th><th>Monthly</th><th>Annual</th></tr></thead>
+                <tbody>
+                  <tr><td>Purchase Loan P&I</td><td>$9,311</td><td>$111,733</td></tr>
+                  <tr><td>Property Insurance</td><td>$2,052</td><td>$24,625</td></tr>
+                  <tr><td>Property Taxes</td><td>$2,052</td><td>$24,625</td></tr>
+                  <tr><td>PM Fee (4%)</td><td>$507</td><td>$6,088</td></tr>
+                  <tr><td>Other Expenses</td><td>$417</td><td>$5,000</td></tr>
+                  <tr class="row-total"><td>Total</td><td>$14,339</td><td>$172,071</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Expense Notes -->
+            <div class="collapse-trigger" id="c-notes-trigger" onclick="this.classList.toggle('open')">
+              <span>📋 Expense Notes</span>
+              <span style="font-size:10px;">▾</span>
+            </div>
+            <div class="collapse-body">
+              <strong>Insurance</strong> — CA rate 1.25% of purchase price ($24,625/yr)<br>
+              <strong>Taxes</strong> — CA rate 1.25% of purchase price ($24,625/yr)<br>
+              <strong>PM Fee</strong> — 4% of annual gross rents (commercial standard)<br>
+              <strong>P&I</strong> — 25-year term at 6.5% on $1,379,000 loan ($9,311/mo)
+            </div>
+
+            <!-- Total Annual Operating Expenses -->
+            <div class="total-metric">
+              <span class="total-metric-label">Total Annual Operating Expenses</span>
+              <span class="total-metric-val">$60,338</span>
+            </div>
+
+            <!-- Investment Analysis -->
+            <div class="sec-header">Investment Analysis</div>
+            <div class="tbl-container">
+              <table class="tbl">
+                <thead><tr><th>Metric</th><th>Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Annual Gross Rents</td><td>$152,195</td></tr>
+                  <tr><td>Adjusted Gross Income</td><td>$147,629</td></tr>
+                  <tr><td>Annual NOI (Estimated)</td><td class="text-up fw-700">$87,291</td></tr>
+                  <tr><td>Annual Debt Service</td><td>$111,733</td></tr>
+                  <tr><td>Annual Cash Flow</td><td class="text-down fw-700">-$24,442</td></tr>
+                  <tr><td>Cash-on-Cash Return</td><td class="text-down fw-700">-3.8%</td></tr>
+                  <tr><td>Total Cash Down</td><td>$650,100</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Deal Evaluation Banner -->
+            <div class="deal-banner bad">
+              ❌ BAD DEAL: Negative annual cash flow of -$24,442
+            </div>
+
+            <!-- Investment Summary -->
+            <div class="sec-header">Investment Summary</div>
+            <div class="summary-grid">
+              <div class="summary-row"><span class="sr-label">Purchase Price</span><span class="sr-val">$1,970,000</span></div>
+              <div class="summary-row"><span class="sr-label">Loan Amount</span><span class="sr-val">$1,379,000</span></div>
+              <div class="summary-row"><span class="sr-label">Down Payment</span><span class="sr-val">$591,000 <span style="color:var(--text-3);font-size:10px;">(30%)</span></span></div>
+              <div class="summary-row"><span class="sr-label">Monthly Payment</span><span class="sr-val">$9,311</span></div>
+              <div class="summary-row"><span class="sr-label">Closing Costs</span><span class="sr-val">$59,100</span></div>
+              <div class="summary-row"><span class="sr-label">Annual NOI</span><span class="sr-val text-up">$87,291</span></div>
+              <div class="summary-row"><span class="sr-label">Total Cash Investment</span><span class="sr-val">$650,100</span></div>
+              <div class="summary-row"><span class="sr-label">Annual Cash Flow</span><span class="sr-val text-down">-$24,442 <span class="sr-delta text-down">Negative cash flow</span></span></div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Bar -->
+          <div class="bottom-bar">
+            <button class="btn btn-gold">💾 Save to Portfolio</button>
+            <button class="btn btn-outline">🔗 Share Link</button>
+            <button class="btn btn-outline">📊 Portfolio</button>
+            <div class="bar-spacer"></div>
+            <span class="bar-status">not saved</span>
+          </div>
+        </div>
+
+        <!-- ============ RESIDENTIAL ============ -->
+        <div class="calc-view" id="residential" style="display:none;">
+
+          <!-- Input Strip -->
+          <div class="input-strip">
+            <div class="input-strip-top">
+              <div class="type-pill">
+                <button class="active" onclick="showCalc('residential')">Residential</button>
+                <button onclick="showCalc('commercial')">Commercial</button>
+              </div>
+              <span class="deal-label">Residential Deal</span>
+              <div class="strip-right">
+                <span class="strip-info">Down: $130,000 · Tax: 1.25%</span>
+              </div>
+            </div>
+            <!-- Row 1: 4 fields -->
+            <div class="fields-row four">
+              <div class="cell">
+                <div class="cell-label">Purchase Price</div>
+                <input type="text" value="$650,000">
+              </div>
+              <div class="cell">
+                <div class="cell-label">Monthly Rent</div>
+                <input type="text" value="$5,000">
+              </div>
+              <div class="cell">
+                <div class="cell-label">State</div>
+                <select>
+                  <option>Arizona</option>
+                  <option selected>California</option>
+                  <option>Indiana</option>
+                  <option>Nevada</option>
+                  <option>Texas</option>
+                  <option>Michigan</option>
+                </select>
+              </div>
+              <div class="cell">
+                <div class="cell-label">Loan Term</div>
+                <select>
+                  <option selected>15 years</option>
+                  <option>30 years</option>
+                </select>
+              </div>
+            </div>
+            <!-- Row 2: 2 sliders -->
+            <div class="fields-row two-slider" style="grid-template-columns: 1fr 1fr;">
+              <div class="slider-cell">
+                <div class="slider-header">
+                  <span class="slider-label">Down Payment</span>
+                  <span class="slider-val" id="r-dp-val">20%</span>
+                </div>
+                <input type="range" min="0" max="100" value="20" oninput="document.getElementById('r-dp-val').textContent=this.value+'%'">
+              </div>
+              <div class="slider-cell">
+                <div class="slider-header">
+                  <span class="slider-label">Interest Rate</span>
+                  <span class="slider-val" id="r-ir-val">6.5%</span>
+                </div>
+                <input type="range" min="0" max="20" value="6.5" step="0.1" oninput="document.getElementById('r-ir-val').textContent=this.value+'%'">
+              </div>
+            </div>
+            <!-- Row 3: URL -->
+            <div class="fields-row url">
+              <div class="url-cell">
+                <div class="cell-label">Property URL</div>
+                <input type="text" value="https://www.zillow.com/homedetails/123-example" placeholder="https://...">
+              </div>
+              <a href="#" class="view-link">View Listing ↗</a>
+            </div>
+          </div>
+
+          <!-- Address Bar -->
+          <div class="address-bar">
+            <a href="#">1423 Oak Grove Dr, Los Angeles, CA 90041</a>
+          </div>
+
+          <!-- Results -->
+          <div class="calc-scroll">
+
+            <!-- Verdict -->
+            <div class="verdict invest">
+              <div class="verdict-icon">✅</div>
+              <div class="verdict-body">
+                <div class="verdict-label">Invest</div>
+                <div class="verdict-title">Strong Returns — Proceed With Confidence</div>
+                <ul class="verdict-reasons">
+                  <li>DSCR 1.38× exceeds the 1.25× lender threshold</li>
+                  <li>Cash-on-Cash 12.4% well above the 8% target</li>
+                  <li>Profitable even at 75% occupancy — strong downside cushion</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- 4 Metric Cards -->
+            <div class="metrics-row">
+              <div class="metric up">
+                <div class="metric-label">Cap Rate</div>
+                <div class="metric-num">7.2%</div>
+                <div class="metric-sub">Above 5% target</div>
+              </div>
+              <div class="metric up">
+                <div class="metric-label">Cash-on-Cash</div>
+                <div class="metric-num">12.4%</div>
+                <div class="metric-sub">Strong ROI</div>
+              </div>
+              <div class="metric up">
+                <div class="metric-label">DSCR</div>
+                <div class="metric-num">1.38×</div>
+                <div class="metric-sub">Above 1.25×</div>
+              </div>
+              <div class="metric up">
+                <div class="metric-label">Est. NOI</div>
+                <div class="metric-num">$47K</div>
+                <div class="metric-sub">Positive</div>
+              </div>
+            </div>
+
+            <!-- Monthly Expenses -->
+            <div class="sec-header">Monthly Expenses</div>
+            <div class="tbl-container">
+              <table class="tbl">
+                <thead><tr><th>Expense</th><th>Monthly</th></tr></thead>
+                <tbody>
+                  <tr><td>P&I</td><td>$4,528</td></tr>
+                  <tr><td>Insurance (1%)</td><td>$542</td></tr>
+                  <tr><td>Property Tax (1.25%)</td><td>$677</td></tr>
+                  <tr><td>PM Fee (10%)</td><td>$500</td></tr>
+                  <tr><td>Maintenance</td><td>$250</td></tr>
+                  <tr class="row-total"><td>Total</td><td>$6,497</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Investment Returns / Occupancy -->
+            <div class="sec-header">Investment Returns / Occupancy</div>
+            <div class="tbl-container">
+              <table class="tbl">
+                <thead><tr><th>Scenario</th><th>Monthly Cash Flow</th><th>Annual ROI</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>75% Occupancy</td>
+                    <td class="text-down fw-700">-$2,747</td>
+                    <td class="text-down fw-700">-25.4%</td>
+                  </tr>
+                  <tr>
+                    <td>90% Occupancy</td>
+                    <td class="text-up fw-700">$1,003</td>
+                    <td class="text-up fw-700">9.3%</td>
+                  </tr>
+                  <tr>
+                    <td>100% Occupancy</td>
+                    <td class="text-up fw-700">$2,503</td>
+                    <td class="text-up fw-700">23.1%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Investment Status -->
+            <div class="deal-banner good">
+              ✅ Good Investment: Profitable even at 75% occupancy
+            </div>
+
+            <!-- Amortization Schedule -->
+            <div class="sec-header">Amortization Schedule</div>
+            <div class="tbl-container">
+              <table class="tbl">
+                <thead><tr><th>Payment #</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td>$1,698</td><td>$2,817</td><td>$518,302</td></tr>
+                  <tr><td>2</td><td>$1,707</td><td>$2,808</td><td>$516,595</td></tr>
+                  <tr><td>3</td><td>$1,716</td><td>$2,799</td><td>$514,879</td></tr>
+                  <tr><td>4</td><td>$1,726</td><td>$2,789</td><td>$513,153</td></tr>
+                  <tr><td>5</td><td>$1,735</td><td>$2,780</td><td>$511,418</td></tr>
+                  <tr><td>6</td><td>$1,744</td><td>$2,770</td><td>$509,674</td></tr>
+                  <tr><td>7</td><td>$1,754</td><td>$2,761</td><td>$507,920</td></tr>
+                  <tr><td>8</td><td>$1,763</td><td>$2,751</td><td>$506,157</td></tr>
+                  <tr><td>9</td><td>$1,773</td><td>$2,742</td><td>$504,384</td></tr>
+                  <tr><td>10</td><td>$1,783</td><td>$2,732</td><td>$502,601</td></tr>
+                  <tr><td>11</td><td>$1,792</td><td>$2,722</td><td>$500,809</td></tr>
+                  <tr><td>12</td><td>$1,802</td><td>$2,713</td><td>$499,007</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Loan Balance Over Time -->
+            <div class="sec-header">Loan Balance Over Time</div>
+            <div class="bar-chart">
+              <div class="bar-row">
+                <span class="bar-label">Yr 0</span>
+                <div class="bar-track"><div class="bar-fill gold" style="width:100%"></div></div>
+                <span class="bar-val">$520,000</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Yr 3</span>
+                <div class="bar-track"><div class="bar-fill gold" style="width:88%"></div></div>
+                <span class="bar-val">$457,600</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Yr 5</span>
+                <div class="bar-track"><div class="bar-fill gold" style="width:78%"></div></div>
+                <span class="bar-val">$405,600</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Yr 7</span>
+                <div class="bar-track"><div class="bar-fill gold" style="width:67%"></div></div>
+                <span class="bar-val">$348,400</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Yr 10</span>
+                <div class="bar-track"><div class="bar-fill gold" style="width:50%"></div></div>
+                <span class="bar-val">$260,000</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Yr 12</span>
+                <div class="bar-track"><div class="bar-fill gold" style="width:35%"></div></div>
+                <span class="bar-val">$182,000</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Yr 15</span>
+                <div class="bar-track"><div class="bar-fill green" style="width:0%"></div></div>
+                <span class="bar-val">$0</span>
+              </div>
+            </div>
+
+            <!-- Investment Summary -->
+            <div class="sec-header">Investment Summary</div>
+            <div class="summary-grid">
+              <div class="summary-row"><span class="sr-label">Purchase Price</span><span class="sr-val">$650,000</span></div>
+              <div class="summary-row"><span class="sr-label">Loan Amount</span><span class="sr-val">$520,000</span></div>
+              <div class="summary-row"><span class="sr-label">Down Payment</span><span class="sr-val">$130,000</span></div>
+              <div class="summary-row"><span class="sr-label">Monthly P&I</span><span class="sr-val">$4,528</span></div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Bar -->
+          <div class="bottom-bar">
+            <button class="btn btn-gold">💾 Save to Portfolio</button>
+            <button class="btn btn-outline">🔗 Share Link</button>
+            <button class="btn btn-outline">📊 Portfolio</button>
+            <div class="bar-spacer"></div>
+            <span class="bar-status">not saved</span>
+          </div>
+        </div>
+
+      </div><!-- /calc-panel -->
+    </div><!-- /workspace -->
+  </div><!-- /app -->
+
+  <script>
+    function toggleChat() {
+      const panel = document.getElementById('chatPanel');
+      const btn = document.getElementById('chatToggle');
+      panel.classList.toggle('open');
+      btn.classList.toggle('active');
+    }
+
+    function showCalc(type) {
+      document.getElementById('commercial').style.display = type === 'commercial' ? 'flex' : 'none';
+      document.getElementById('residential').style.display = type === 'residential' ? 'flex' : 'none';
+      // Update all type-pill buttons
+      document.querySelectorAll('.type-pill button').forEach(function(b) {
+        var label = b.textContent.trim().toLowerCase();
+        b.classList.toggle('active', label === type);
+      });
+    }
+  </script>
+</body>
+</html>

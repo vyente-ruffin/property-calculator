@@ -19,6 +19,7 @@ class PropertyData(BaseModel):
     Unit_Mix_Summary: str | None = None
     Link: str | None = None
     Description: str | None = None
+    Image_URL: str | None = None
 
     def to_display_dict(self) -> dict:
         """Return dict with user-friendly keys matching the original schema."""
@@ -38,6 +39,7 @@ class PropertyData(BaseModel):
             "Unit Mix Summary": self.Unit_Mix_Summary,
             "Link": self.Link,
             "Description": self.Description,
+            "Image URL": self.Image_URL,
         }
 
     @classmethod
@@ -59,6 +61,7 @@ class PropertyData(BaseModel):
             Unit_Mix_Summary=d.get("Unit Mix Summary"),
             Link=d.get("Link"),
             Description=d.get("Description"),
+            Image_URL=d.get("Image URL"),
         )
 
 
@@ -81,6 +84,7 @@ PROPERTY_JSON_SCHEMA = {
         "Unit Mix Summary": {"type": ["string", "null"]},
         "Link": {"type": ["string", "null"]},
         "Description": {"type": ["string", "null"]},
+        "Image URL": {"type": ["string", "null"]},
     },
     "required": [
         "Price",
@@ -98,6 +102,7 @@ PROPERTY_JSON_SCHEMA = {
         "Unit Mix Summary",
         "Link",
         "Description",
+        "Image URL",
     ],
     "additionalProperties": False,
 }

@@ -1,0 +1,16 @@
+<div class="pipeline open">
+  <div class="pipeline-toggle" onclick="this.parentElement.classList.toggle('open')">
+    <span class="check">✅</span>
+    <span>Analyzed — 7/7 steps complete</span>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="pipeline-steps">
+    {% for step in steps %}
+    <div class="step {{ step.status }}">
+      <span class="step-status">{% if step.status == 'done' %}✅{% elif step.status == 'skipped' %}⏭{% elif step.status == 'error' %}❌{% else %}⏳{% endif %}</span>
+      <span class="step-name">{{ step.name }}</span>
+      <span class="step-detail">{{ step.detail }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>

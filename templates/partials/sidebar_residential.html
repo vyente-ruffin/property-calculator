@@ -1,0 +1,84 @@
+{% set pp = params.get('purchase_price', '650000')|int %}
+{% set dp_pct = params.get('down_payment_pct', '20')|int %}
+{% set down_amt = (pp * dp_pct / 100)|int %}
+<form id="calc-form"
+      hx-post="/calculate"
+      hx-trigger="change"
+      hx-target="#results"
+      hx-include="[name]"
+      hx-push-url="true">
+  <input type="hidden" name="property_type" value="Residential">
+  <input type="hidden" name="total_units" value="1">
+
+  <!-- Property Type Toggle -->
+  <div class="type-toggle" role="group" aria-label="Property type">
+    <button type="button" class="active">Residential</button>
+    <button type="button" hx-get="/sidebar/commercial" hx-target="#sidebar-form" hx-swap="innerHTML">Commercial</button>
+  </div>
+  <div class="type-hint">Residential: 4 units or less</div>
+
+  <!-- Group 1: The Asset -->
+  <div class="sb-group"><span class="sb-group-label">The Asset</span></div>
+  <div class="field">
+    <label>Purchase Price</label>
+    <input type="number" name="purchase_price" value="{{ params.get('purchase_price', '650000') }}">
+  </div>
+  <div class="field">
+    <label>Down Payment %</label>
+    <input type="number" name="down_payment_pct" value="{{ params.get('down_payment_pct', '20') }}" min="0" max="100">
+  </div>
+  <div class="field-hint">
+    Amount Down:
+    {% if down_amt <= 500000 %}
+    <span class="down-amount up">${{ '{:,.0f}'.format(down_amt) }}</span>
+    {% elif down_amt <= 750000 %}
+    <span class="down-amount caution">${{ '{:,.0f}'.format(down_amt) }}</span>
+    {% else %}
+    <span class="down-amount down">${{ '{:,.0f}'.format(down_amt) }}</span>
+    {% endif %}
+  </div>
+
+  <!-- Group 2: What It Earns -->
+  <div class="sb-group"><span class="sb-group-label">What It Earns</span></div>
+  <div class="field">
+    <label>Expected Monthly Rent</label>
+    <input type="number" name="monthly_rent" value="{{ params.get('monthly_rent', '5000') }}" step="100">
+  </div>
+
+  <!-- Group 3: How You Buy It -->
+  <div class="sb-group"><span class="sb-group-label">How You Buy It</span></div>
+  <div class="field">
+    <label>Interest Rate %</label>
+    <input type="number" name="interest_rate" value="{{ params.get('interest_rate', '6.5') }}" min="0" max="20" step="0.1">
+  </div>
+  <div class="field">
+    <label>Loan Term</label>
+    <select name="loan_years">
+      <option value="15" {% if params.get('loan_years', '15')|string == '15' %}selected{% endif %}>15 yr</option>
+      <option value="30" {% if params.get('loan_years', '15')|string == '30' %}selected{% endif %}>30 yr</option>
+    </select>
+  </div>
+
+  <!-- Group 4: Where -->
+  <div class="sb-group"><span class="sb-group-label">Where</span></div>
+  <div class="field">
+    <label>State</label>
+    <select name="state">
+      {% for st, name in [('AZ','Arizona'),('CA','California'),('IN','Indiana'),('NV','Nevada'),('TX','Texas'),('MI','Michigan')] %}
+      <option value="{{ st }}" {% if params.get('state', 'CA') == st %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="rates-row">
+    <div class="rate-box">
+      <div class="rate-label">Tax Rate</div>
+      <div class="rate-val" id="taxRateDisplay">1.25%</div>
+    </div>
+    <div class="rate-box">
+      <div class="rate-label">Insurance Rate</div>
+      <div class="rate-val" id="insuranceRateDisplay">1.0%</div>
+    </div>
+  </div>
+
+  <input type="hidden" name="property_url" value="{{ params.get('property_url', '') }}">
+</form>

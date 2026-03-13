@@ -1,0 +1,42 @@
+{# Portfolio — list of all parsed/searched properties #}
+
+{% if not properties %}
+<div class="empty-state">
+  <div style="font-size:48px; text-align:center; margin:60px 0 16px;">📊</div>
+  <p style="text-align:center; color:var(--text-dim); font-size:14px;">No properties analyzed yet. Paste a listing URL to get started.</p>
+</div>
+{% else %}
+<div class="sec-header" style="margin-top:0;">Properties Searched — {{ properties|length }} Total</div>
+<div class="tbl-container">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Address</th>
+        <th>City</th>
+        <th>Price</th>
+        <th>Units</th>
+        <th>Cap Rate</th>
+        <th>NOI</th>
+        <th>Annual Rent</th>
+        <th>DOM</th>
+        <th>Searched</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in properties %}
+      <tr style="cursor:pointer;" onclick="var u={{ (p.property_url or '')|tojson }};window.location='/?property_type=Commercial&purchase_price={{ p.price or 0 }}&down_payment_pct=30&interest_rate=6.5&loan_years=25&state={{ p.state or 'CA' }}&annual_gross_rents={{ p.annual_rent or 0 }}&annual_noi_listing={{ p.noi or 0 }}&vacancy_rate=3&other_expenses=5000&total_units={{ p.total_units or 8 }}&property_url='+encodeURIComponent(u)">
+        <td>{{ p.address or '--' }}</td>
+        <td style="font-size:11px;">{{ p.city or '--' }}</td>
+        <td>{% if p.price %}${{ "{:,}".format(p.price) }}{% else %}--{% endif %}</td>
+        <td>{{ p.total_units or '--' }}</td>
+        <td>{{ p.cap_rate or '--' }}</td>
+        <td>{% if p.noi %}${{ "{:,}".format(p.noi) }}{% else %}--{% endif %}</td>
+        <td>{% if p.annual_rent %}${{ "{:,}".format(p.annual_rent) }}{% else %}--{% endif %}</td>
+        <td style="font-size:11px;">{{ p.date_on_market or '--' }}</td>
+        <td style="font-size:11px;color:var(--text-dim);">{{ p.parsed_at or '--' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}

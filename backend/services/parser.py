@@ -1,7 +1,8 @@
 import json
-import logging
 import re
 from collections.abc import AsyncGenerator
+
+from src.core.logger import get_logger
 
 from backend.services.openai_client import enrich_and_reextract, extract_fields
 from backend.services.page_scraper import scrape_listing_page
@@ -12,7 +13,7 @@ from backend.services.rentcast import (
 )
 from backend.services.web_search import search_listing_url
 
-logger = logging.getLogger(__name__)
+log = get_logger("parser")
 
 
 def _sse_event(step: str, status: str, data: dict | None = None) -> str:
@@ -47,12 +48,14 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
     yield _sse_event("parse_input", "running")
     try:
         raw_text, url, is_url_only = _parse_input(text)
+        log.info("step_parse_input has_url=%s text_length=%d is_url_only=%s", url is not None, len(raw_text), is_url_only)
         yield _sse_event(
             "parse_input",
             "done",
             {"has_url": url is not None, "text_length": len(raw_text), "is_url_only": is_url_only},
         )
     except Exception as e:
+        log.error("step_parse_input_failed: %s", e)
         yield _sse_event("parse_input", "error", {"message": str(e)})
         return
 
@@ -63,6 +66,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
             scraped_text = await scrape_listing_page(url)
             if scraped_text:
                 raw_text = scraped_text
+                log.info("step_scrape_url text_length=%d url=%s", len(raw_text), url)
                 yield _sse_event(
                     "scrape_url", "done", {"text_length": len(raw_text)}
                 )
@@ -72,7 +76,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
                 )
                 return
         except Exception as e:
-            logger.exception("Page scraping failed")
+            log.error("step_scrape_failed: %s url=%s", e, url)
             yield _sse_event("scrape_url", "error", {"message": str(e)})
             return
     else:
@@ -82,9 +86,10 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
     yield _sse_event("extract_fields", "running")
     try:
         first_pass = extract_fields(raw_text, url)
+        log.info("step_extract_fields fields_found=%d price=%s address=%s", len([v for v in first_pass.values() if v]), first_pass.get("Price"), first_pass.get("Address"))
         yield _sse_event("extract_fields", "done", {"fields": first_pass})
     except Exception as e:
-        logger.exception("OpenAI extraction failed")
+        log.error("step_extract_failed: %s", e)
         yield _sse_event("extract_fields", "error", {"message": str(e)})
         return
 
@@ -108,19 +113,23 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
                     "search_link", "skipped", {"reason": "No address to search"}
                 )
         except Exception as e:
-            logger.exception("Web search failed")
+            log.error("step_search_link_failed: %s", e)
             yield _sse_event("search_link", "error", {"message": str(e)})
     else:
         yield _sse_event(
             "search_link", "skipped", {"reason": "Link already provided"}
         )
 
-    # Step 4: Rentcast for projected rent
+    # Step 4: Rentcast for actual market rents
+    # Trigger when listing has no rent data at all — Rentcast fills Actual fields
     rentcast_data = None
-    projected_missing = first_pass.get("Monthly Rental Income (Projected)") is None
+    rents_missing = (
+        first_pass.get("Monthly Rental Income (Actual)") is None
+        and first_pass.get("Monthly Rental Income (Projected)") is None
+    )
     unit_mix_str = first_pass.get("Unit Mix Summary")
 
-    if projected_missing and unit_mix_str:
+    if rents_missing and unit_mix_str:
         yield _sse_event("rentcast", "running")
         try:
             units = parse_unit_mix(unit_mix_str)
@@ -150,10 +159,10 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
                     {"reason": f"Missing: {', '.join(missing)}"},
                 )
         except Exception as e:
-            logger.exception("Rentcast failed")
+            log.error("step_rentcast_failed: %s", e)
             yield _sse_event("rentcast", "error", {"message": str(e)})
     else:
-        reason = "Projected rent already present" if not projected_missing else "No unit mix available"
+        reason = "Rent data already present in listing" if not rents_missing else "No unit mix available"
         yield _sse_event("rentcast", "skipped", {"reason": reason})
 
     # Step 5: Re-extract with enrichment if new data found
@@ -166,7 +175,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
             )
             yield _sse_event("reextract", "done", {"fields": final_data})
         except Exception as e:
-            logger.exception("Re-extraction failed")
+            log.error("step_reextract_failed: %s", e)
             yield _sse_event("reextract", "error", {"message": str(e)})
             final_data = first_pass
     else:
@@ -193,4 +202,7 @@ async def run_parsing_pipeline(text: str) -> AsyncGenerator[str, None]:
     )
 
     # Step 7: Complete
+    log.info("pipeline_complete price=%s address=%s city=%s units=%s",
+             final_data.get("Price"), final_data.get("Address"),
+             final_data.get("City"), final_data.get("Total Units"))
     yield _sse_event("complete", "done", {"result": final_data})

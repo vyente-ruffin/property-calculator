@@ -1,0 +1,12 @@
+<div class="msg system">
+  <div class="msg-bubble">
+    <strong style="color:var(--text-white);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Extracted Data</strong>
+    <div class="extract-grid">
+      {% for key, val in fields.items() %}
+      <span class="extract-key">{{ key }}</span>
+      <span class="extract-val">{{ val or '--' }}</span>
+      {% endfor %}
+    </div>
+    <div class="extract-populated">Calculator populated →</div>
+  </div>
+</div>

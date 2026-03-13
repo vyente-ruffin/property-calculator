@@ -1,15 +1,28 @@
-# Core dependencies with memory optimization
-streamlit>=1.41.1
-pandas>=2.2.3
-plotly>=5.24.1
+# Core web framework
+fastapi==0.134.0
+uvicorn[standard]==0.41.0
+jinja2==3.1.6
+python-multipart==0.0.20
 
-# Performance optimization packages
-psutil>=5.9.0
+# Data & settings
+pydantic-settings==2.13.1
+pandas==2.2.3
 
-# Property Parser backend
-fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
-pydantic-settings>=2.6.0
-openai>=1.55.0
-httpx>=0.27.0
-playwright>=1.40.0
+# Google Sheets
+gspread==6.1.4
+google-auth==2.40.1
+
+# Property Parser
+openai==2.24.0
+httpx==0.28.1
+playwright==1.52.0
+
+# Linting
+ruff==0.11.2
+djlint==1.36.4
+
+# Testing
+pytest==8.3.5
+pytest-asyncio==0.26.0
+structlog
+python-dotenv

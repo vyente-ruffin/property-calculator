@@ -1,12 +1,13 @@
-import logging
 import re
 from urllib.parse import quote
+
+from src.core.logger import get_logger
 
 import httpx
 
 from backend.config import settings
 
-logger = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 RENTCAST_BASE_URL = "https://api.rentcast.io/v1/avm/rent/long-term"
 
@@ -59,7 +60,7 @@ async def get_projected_rent(
     or None on failure.
     """
     if not settings.RENTCAST_API_KEY:
-        logger.warning("No RENTCAST_API_KEY configured")
+        log.warning("No RENTCAST_API_KEY configured")
         return None
 
     encoded_address = quote(address)
@@ -98,10 +99,10 @@ async def get_projected_rent(
                         "subtotal": unit_monthly,
                     })
                 else:
-                    logger.warning(f"Rentcast returned no rentRangeLow for {br}BD/{ba}BA")
+                    log.warning(f"Rentcast returned no rentRangeLow for {br}BD/{ba}BA")
                     return None
             except httpx.HTTPError as e:
-                logger.error(f"Rentcast API error for {br}BD/{ba}BA: {e}")
+                log.error(f"Rentcast API error for {br}BD/{ba}BA: {e}")
                 return None
 
     if not results:

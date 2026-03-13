@@ -1,7 +1,15 @@
 /* App initialization and calculator linking */
 
+function getCalculatorUrl() {
+  var host = window.location.hostname;
+  if (host.includes("azurewebsites.net")) {
+    return "https://property-calculator.azurewebsites.net";
+  }
+  return "http://" + host + ":8501";
+}
+
 function openCalculator() {
-  window.open("http://localhost:8501", "_blank");
+  window.open(getCalculatorUrl(), "_blank");
 }
 
 function openCalculatorWithData(data) {
@@ -44,7 +52,7 @@ function openCalculatorWithData(data) {
     if (state) params.set("state", state);
   }
 
-  window.open("http://localhost:8501?" + params.toString(), "_blank");
+  window.open(getCalculatorUrl() + "?" + params.toString(), "_blank");
 }
 
 function parseCurrency(val) {
@@ -62,3 +70,8 @@ function extractState(city) {
   m = city.match(/,\s*([A-Z]{2})$/);
   return m ? m[1] : null;
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  var link = document.getElementById("calcNavLink");
+  if (link) link.href = getCalculatorUrl();
+});
